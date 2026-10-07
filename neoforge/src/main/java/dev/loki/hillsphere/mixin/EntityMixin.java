@@ -23,12 +23,8 @@ import dev.loki.hillsphere.field.math.Vec3d;
 import dev.loki.hillsphere.field.resolve.Gravity;
 import dev.loki.hillsphere.world.FieldLookup;
 
-import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MoverType;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -74,29 +70,5 @@ public abstract class EntityMixin {
             self.setDeltaMovement(self.getDeltaMovement().add(down.x() * pull, down.y() * pull, down.z() * pull));
         }
         ci.cancel();
-    }
-
-    /** Hitting the ceiling is standing, when the ceiling is the floor. */
-    @Inject(method = "move", at = @At("TAIL"))
-    private void hillsphereStandOnTheCeiling(MoverType type, Vec3 movement, CallbackInfo ci) {
-
-        final Entity self = (Entity) (Object) this;
-        if (movement.y > 0 && self.verticalCollision && LivingGravity.factor(self) < 0) {
-            self.setOnGround(true);
-            if (self.fallDistance > 0) {
-                self.causeFallDamage(self.fallDistance, 1f, self.damageSources().fall());
-                self.resetFallDistance();
-            }
-        }
-    }
-
-    /** Falling up counts as falling: the distance adds up the same way and is paid for on the ceiling. */
-    @Inject(method = "checkFallDamage", at = @At("HEAD"))
-    private void hillsphereFallUp(double y, boolean onGround, BlockState state, BlockPos pos, CallbackInfo ci) {
-
-        final Entity self = (Entity) (Object) this;
-        if (y > 0 && !onGround && LivingGravity.factor(self) < 0) {
-            self.fallDistance += (float) y;
-        }
     }
 }

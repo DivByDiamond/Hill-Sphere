@@ -37,7 +37,7 @@ public abstract class ServerPacketMixin {
     @Inject(method = "noBlocksAround", at = @At("HEAD"), cancellable = true)
     private void hillsphereNotFloating(Entity entity, CallbackInfoReturnable<Boolean> cir) {
 
-        if (FieldLookup.liftAt(entity) > HOVER_LIFT || LivingGravity.factor(entity) < 0) {
+        if (FieldLookup.liftAt(entity) > HOVER_LIFT || !LivingGravity.frameOf(entity).isVanilla()) {
             cir.setReturnValue(false);
         }
     }

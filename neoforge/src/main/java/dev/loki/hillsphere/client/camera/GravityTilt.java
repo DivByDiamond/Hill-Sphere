@@ -24,13 +24,14 @@ import com.playsi.aero_cam_sync.api.TiltContext;
 import com.playsi.aero_cam_sync.api.TiltSource;
 import dev.loki.hillsphere.Constants;
 import dev.loki.hillsphere.entity.LivingGravity;
+import dev.loki.hillsphere.field.math.Vec3d;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.phys.Vec3;
+import org.joml.Matrix3f;
 import org.joml.Quaternionf;
 
-/** Turns the local player's camera upside down where the field has turned "down" to the sky. */
+/** Turns the local player's camera with the frame the field has put them in. */
 public final class GravityTilt implements TiltSource {
 
     private static final int PRIORITY = 100;
@@ -48,24 +49,18 @@ public final class GravityTilt implements TiltSource {
     public boolean appliesTo(TiltContext context) {
 
         final Player player = context.player();
-        return player == Minecraft.getInstance().player && LivingGravity.factor(player) < 0;
+        return player == Minecraft.getInstance().player && !LivingGravity.frameOf(player).isVanilla();
     }
 
-    /** A half turn about the horizontal line the player faces along, so left and right swap but the heading holds. */
+    /** The turn that takes the world's up to where the player's head points. */
     @Override
     public Quaternionf tilt(TiltContext context) {
 
-        final double yaw = Math.toRadians(context.player().getYRot());
-        return new Quaternionf().rotationAxis((float) Math.PI, (float) -Math.sin(yaw), 0f, (float) Math.cos(yaw));
-    }
-
-    /** The head is now at the bottom of the body box, so the eye sits an eye-height below the top of it. */
-    @Override
-    public Vec3 eyeOffset(TiltContext context) {
-
-        final Player player = context.player();
-        final Vec3 feet = player.position();
-        final Vec3 wanted = feet.add(0, player.getBbHeight() - player.getEyeHeight(), 0);
-        return wanted.subtract(context.cameraPosFor(tilt(context)));
+        final Vec3d[] axes = LivingGravity.frameOf(context.player()).axes();
+        final Matrix3f turn = new Matrix3f(
+                (float) axes[0].x(), (float) axes[0].y(), (float) axes[0].z(),
+                (float) axes[1].x(), (float) axes[1].y(), (float) axes[1].z(),
+                (float) axes[2].x(), (float) axes[2].y(), (float) axes[2].z());
+        return new Quaternionf().setFromNormalized(turn);
     }
 }
