@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "###",
+    "###",
+    "###"
+  ],
+  "key": {
+    "#": {
+      "item": "hillsphere:gravite_ingot"
+    }
+  },
+  "result": {
+    "id": "hillsphere:gravite_block"
+  }
+}

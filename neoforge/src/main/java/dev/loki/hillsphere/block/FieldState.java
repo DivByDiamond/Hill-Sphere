@@ -1,0 +1,47 @@
+/*
+ * Copyright (C) 2026 loki
+ *
+ * This file is part of Hill Sphere.
+ *
+ * Hill Sphere is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Hill Sphere is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Hill Sphere. If not, see <https://www.gnu.org/licenses/>.
+ */
+package dev.loki.hillsphere.block;
+
+import dev.loki.hillsphere.field.Polarity;
+
+import java.util.Locale;
+import net.minecraft.util.StringRepresentable;
+
+/** What a core looks like: off, or glowing in the colour of its polarity. */
+public enum FieldState implements StringRepresentable {
+    OFF,
+    ATTRACT,
+    REPEL,
+    LEVITATE;
+
+    public static FieldState of(Polarity polarity) {
+
+        return switch (polarity) {
+            case ATTRACT -> ATTRACT;
+            case REPEL -> REPEL;
+            case LEVITATE -> LEVITATE;
+        };
+    }
+
+    @Override
+    public String getSerializedName() {
+
+        return name().toLowerCase(Locale.ROOT);
+    }
+}

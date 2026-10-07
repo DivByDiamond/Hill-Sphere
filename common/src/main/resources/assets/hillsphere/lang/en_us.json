@@ -1,0 +1,20 @@
+{
+  "block.hillsphere.hill_core": "Hill Core",
+  "block.hillsphere.hill_plate": "Hill Plate",
+  "block.hillsphere.deepslate_gravite_ore": "Deepslate Gravite Ore",
+  "block.hillsphere.gravite_block": "Block of Gravite",
+  "item.hillsphere.raw_gravite": "Raw Gravite",
+  "item.hillsphere.gravite_ingot": "Gravite Ingot",
+  "item.hillsphere.gravite_sheet": "Gravite Sheet",
+  "item.hillsphere.crushed_gravite": "Crushed Gravite",
+  "item.hillsphere.haunted_gravite": "Haunted Gravite",
+  "item.hillsphere.hill_goggles": "Hill Goggles",
+  "hillsphere.core.polarity": "Polarity",
+  "hillsphere.core.polarity.attract": "Attract",
+  "hillsphere.core.polarity.repel": "Repel",
+  "hillsphere.core.polarity.levitate": "Levitate",
+  "hillsphere.core.level": "Strength level",
+  "block.hillsphere.molten_gravite": "Molten Gravite",
+  "fluid_type.hillsphere.molten_gravite": "Molten Gravite",
+  "item.hillsphere.molten_gravite_bucket": "Molten Gravite Bucket"
+}

@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "###",
+    "###",
+    "###"
+  ],
+  "key": {
+    "#": {
+      "item": "hillsphere:gravite_sheet"
+    }
+  },
+  "result": {
+    "id": "hillsphere:hill_plate"
+  }
+}

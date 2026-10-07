@@ -1,0 +1,196 @@
+{
+  "variants": {
+    "axis=x,field=off,level=1": {
+      "model": "hillsphere:block/hill_core_off_1",
+      "x": 90,
+      "y": 90
+    },
+    "axis=y,field=off,level=1": {
+      "model": "hillsphere:block/hill_core_off_1"
+    },
+    "axis=z,field=off,level=1": {
+      "model": "hillsphere:block/hill_core_off_1",
+      "x": 90
+    },
+    "axis=x,field=off,level=2": {
+      "model": "hillsphere:block/hill_core_off_2",
+      "x": 90,
+      "y": 90
+    },
+    "axis=y,field=off,level=2": {
+      "model": "hillsphere:block/hill_core_off_2"
+    },
+    "axis=z,field=off,level=2": {
+      "model": "hillsphere:block/hill_core_off_2",
+      "x": 90
+    },
+    "axis=x,field=off,level=3": {
+      "model": "hillsphere:block/hill_core_off_3",
+      "x": 90,
+      "y": 90
+    },
+    "axis=y,field=off,level=3": {
+      "model": "hillsphere:block/hill_core_off_3"
+    },
+    "axis=z,field=off,level=3": {
+      "model": "hillsphere:block/hill_core_off_3",
+      "x": 90
+    },
+    "axis=x,field=off,level=4": {
+      "model": "hillsphere:block/hill_core_off_4",
+      "x": 90,
+      "y": 90
+    },
+    "axis=y,field=off,level=4": {
+      "model": "hillsphere:block/hill_core_off_4"
+    },
+    "axis=z,field=off,level=4": {
+      "model": "hillsphere:block/hill_core_off_4",
+      "x": 90
+    },
+    "axis=x,field=attract,level=1": {
+      "model": "hillsphere:block/hill_core_attract_1",
+      "x": 90,
+      "y": 90
+    },
+    "axis=y,field=attract,level=1": {
+      "model": "hillsphere:block/hill_core_attract_1"
+    },
+    "axis=z,field=attract,level=1": {
+      "model": "hillsphere:block/hill_core_attract_1",
+      "x": 90
+    },
+    "axis=x,field=attract,level=2": {
+      "model": "hillsphere:block/hill_core_attract_2",
+      "x": 90,
+      "y": 90
+    },
+    "axis=y,field=attract,level=2": {
+      "model": "hillsphere:block/hill_core_attract_2"
+    },
+    "axis=z,field=attract,level=2": {
+      "model": "hillsphere:block/hill_core_attract_2",
+      "x": 90
+    },
+    "axis=x,field=attract,level=3": {
+      "model": "hillsphere:block/hill_core_attract_3",
+      "x": 90,
+      "y": 90
+    },
+    "axis=y,field=attract,level=3": {
+      "model": "hillsphere:block/hill_core_attract_3"
+    },
+    "axis=z,field=attract,level=3": {
+      "model": "hillsphere:block/hill_core_attract_3",
+      "x": 90
+    },
+    "axis=x,field=attract,level=4": {
+      "model": "hillsphere:block/hill_core_attract_4",
+      "x": 90,
+      "y": 90
+    },
+    "axis=y,field=attract,level=4": {
+      "model": "hillsphere:block/hill_core_attract_4"
+    },
+    "axis=z,field=attract,level=4": {
+      "model": "hillsphere:block/hill_core_attract_4",
+      "x": 90
+    },
+    "axis=x,field=repel,level=1": {
+      "model": "hillsphere:block/hill_core_repel_1",
+      "x": 90,
+      "y": 90
+    },
+    "axis=y,field=repel,level=1": {
+      "model": "hillsphere:block/hill_core_repel_1"
+    },
+    "axis=z,field=repel,level=1": {
+      "model": "hillsphere:block/hill_core_repel_1",
+      "x": 90
+    },
+    "axis=x,field=repel,level=2": {
+      "model": "hillsphere:block/hill_core_repel_2",
+      "x": 90,
+      "y": 90
+    },
+    "axis=y,field=repel,level=2": {
+      "model": "hillsphere:block/hill_core_repel_2"
+    },
+    "axis=z,field=repel,level=2": {
+      "model": "hillsphere:block/hill_core_repel_2",
+      "x": 90
+    },
+    "axis=x,field=repel,level=3": {
+      "model": "hillsphere:block/hill_core_repel_3",
+      "x": 90,
+      "y": 90
+    },
+    "axis=y,field=repel,level=3": {
+      "model": "hillsphere:block/hill_core_repel_3"
+    },
+    "axis=z,field=repel,level=3": {
+      "model": "hillsphere:block/hill_core_repel_3",
+      "x": 90
+    },
+    "axis=x,field=repel,level=4": {
+      "model": "hillsphere:block/hill_core_repel_4",
+      "x": 90,
+      "y": 90
+    },
+    "axis=y,field=repel,level=4": {
+      "model": "hillsphere:block/hill_core_repel_4"
+    },
+    "axis=z,field=repel,level=4": {
+      "model": "hillsphere:block/hill_core_repel_4",
+      "x": 90
+    },
+    "axis=x,field=levitate,level=1": {
+      "model": "hillsphere:block/hill_core_levitate_1",
+      "x": 90,
+      "y": 90
+    },
+    "axis=y,field=levitate,level=1": {
+      "model": "hillsphere:block/hill_core_levitate_1"
+    },
+    "axis=z,field=levitate,level=1": {
+      "model": "hillsphere:block/hill_core_levitate_1",
+      "x": 90
+    },
+    "axis=x,field=levitate,level=2": {
+      "model": "hillsphere:block/hill_core_levitate_2",
+      "x": 90,
+      "y": 90
+    },
+    "axis=y,field=levitate,level=2": {
+      "model": "hillsphere:block/hill_core_levitate_2"
+    },
+    "axis=z,field=levitate,level=2": {
+      "model": "hillsphere:block/hill_core_levitate_2",
+      "x": 90
+    },
+    "axis=x,field=levitate,level=3": {
+      "model": "hillsphere:block/hill_core_levitate_3",
+      "x": 90,
+      "y": 90
+    },
+    "axis=y,field=levitate,level=3": {
+      "model": "hillsphere:block/hill_core_levitate_3"
+    },
+    "axis=z,field=levitate,level=3": {
+      "model": "hillsphere:block/hill_core_levitate_3",
+      "x": 90
+    },
+    "axis=x,field=levitate,level=4": {
+      "model": "hillsphere:block/hill_core_levitate_4",
+      "x": 90,
+      "y": 90
+    },
+    "axis=y,field=levitate,level=4": {
+      "model": "hillsphere:block/hill_core_levitate_4"
+    },
+    "axis=z,field=levitate,level=4": {
+      "model": "hillsphere:block/hill_core_levitate_4",
+      "x": 90
+    }
+  }
+}

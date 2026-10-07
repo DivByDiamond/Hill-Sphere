@@ -1,0 +1,18 @@
+{
+  "type": "create:crushing",
+  "ingredients": [
+    {
+      "item": "hillsphere:raw_gravite"
+    }
+  ],
+  "processing_time": 250,
+  "results": [
+    {
+      "id": "hillsphere:crushed_gravite"
+    },
+    {
+      "chance": 0.3,
+      "id": "hillsphere:crushed_gravite"
+    }
+  ]
+}

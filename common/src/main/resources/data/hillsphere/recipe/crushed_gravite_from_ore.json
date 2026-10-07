@@ -1,0 +1,22 @@
+{
+  "type": "create:crushing",
+  "ingredients": [
+    {
+      "item": "hillsphere:deepslate_gravite_ore"
+    }
+  ],
+  "processing_time": 350,
+  "results": [
+    {
+      "id": "hillsphere:crushed_gravite"
+    },
+    {
+      "chance": 0.3,
+      "id": "hillsphere:crushed_gravite"
+    },
+    {
+      "chance": 0.75,
+      "id": "create:experience_nugget"
+    }
+  ]
+}

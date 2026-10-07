@@ -1,0 +1,13 @@
+{
+  "type": "create:pressing",
+  "ingredients": [
+    {
+      "item": "hillsphere:gravite_ingot"
+    }
+  ],
+  "results": [
+    {
+      "id": "hillsphere:gravite_sheet"
+    }
+  ]
+}
