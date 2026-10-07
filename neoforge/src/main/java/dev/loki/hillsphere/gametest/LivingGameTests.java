@@ -19,12 +19,15 @@
 package dev.loki.hillsphere.gametest;
 
 import dev.loki.hillsphere.Constants;
+import dev.loki.hillsphere.entity.LivingGravity;
 import dev.loki.hillsphere.field.Polarity;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
@@ -37,7 +40,7 @@ public final class LivingGameTests {
     private LivingGameTests() {
     }
 
-    @GameTest(template = "empty", timeoutTicks = 400)
+    @GameTest(template = "empty", timeoutTicks = 400, batch = "aMobUnderAnAttractingCoreFallsUp")
     public static void aMobUnderAnAttractingCoreFallsUp(GameTestHelper helper) {
 
         CoreGameTests.liftCore(helper, Polarity.ATTRACT);
@@ -51,7 +54,7 @@ public final class LivingGameTests {
         });
     }
 
-    @GameTest(template = "empty", timeoutTicks = 400)
+    @GameTest(template = "empty", timeoutTicks = 400, batch = "aMobStandsOnTheCeilingItFellTo")
     public static void aMobStandsOnTheCeilingItFellTo(GameTestHelper helper) {
 
         CoreGameTests.liftCore(helper, Polarity.ATTRACT);
@@ -64,7 +67,7 @@ public final class LivingGameTests {
         });
     }
 
-    @GameTest(template = "empty", timeoutTicks = 400)
+    @GameTest(template = "empty", timeoutTicks = 400, batch = "aLongFallUpHurtsOnTheCeiling")
     public static void aLongFallUpHurtsOnTheCeiling(GameTestHelper helper) {
 
         CoreGameTests.liftCore(helper, Polarity.ATTRACT);
@@ -74,6 +77,45 @@ public final class LivingGameTests {
             helper.runAfterDelay(80, () -> {
                 helper.assertTrue(pig.getHealth() < pig.getMaxHealth(), "a long fall up should hurt, health " + pig.getHealth());
                 helper.succeed();
+            });
+        });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 400, batch = "aMobFallsSidewaysToACoreBesideIt")
+    public static void aMobFallsSidewaysToACoreBesideIt(GameTestHelper helper) {
+
+        CoreGameTests.liftCore(helper, Polarity.ATTRACT);
+        helper.runAfterDelay(100, () -> {
+            final Vec3 start = helper.absoluteVec(new Vec3(5.0, 3.0, 3.5));
+            final Mob pig = helper.spawnWithNoFreeWill(EntityType.PIG, new Vec3(5.0, 3.0, 3.5));
+            helper.runAfterDelay(80, () -> {
+                final String where = "from " + start + " to " + pig.position() + " onGround " + pig.onGround();
+                helper.assertTrue(pig.getX() < start.x - 1.0, "a pig beside an attracting core should fall toward it, " + where);
+                helper.assertTrue(Math.abs(pig.getY() - start.y) < 1.6, "it should not fall down, " + where);
+                helper.assertTrue(pig.onGround(), "it should stand against the core, " + where);
+                helper.succeed();
+            });
+        });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 400, batch = "aMobOnAFloorStaysOnItBesideACore")
+    public static void aMobOnAFloorStaysOnItBesideACore(GameTestHelper helper) {
+
+        for (int x = 0; x < 7; x++) {
+            for (int z = 0; z < 7; z++) {
+                helper.setBlock(new BlockPos(x, 0, z), Blocks.STONE);
+            }
+        }
+        CoreGameTests.powered(helper, 128, Polarity.ATTRACT, 3);
+        helper.runAfterDelay(100, () -> {
+            final Mob pig = helper.spawnWithNoFreeWill(EntityType.PIG, new Vec3(5.5, 1.0, 3.5));
+            helper.runAfterDelay(20, () -> {
+                final Vec3 settled = pig.position();
+                helper.runAfterDelay(60, () -> {
+                    helper.assertTrue(pig.position().distanceTo(settled) < 0.3, "a pig on the floor should stay on it, from " + settled + " to " + pig.position());
+                    helper.assertTrue(LivingGravity.frameOf(pig).isVanilla(), "its down should stay down, not " + LivingGravity.frameOf(pig));
+                    helper.succeed();
+                });
             });
         });
     }

@@ -18,36 +18,71 @@
  */
 package dev.loki.hillsphere.mixin;
 
-import dev.loki.hillsphere.entity.LivingGravity;
+import dev.loki.hillsphere.entity.FrameState;
+import dev.loki.hillsphere.field.frame.GravityFrame;
+import dev.loki.hillsphere.field.math.Vec3d;
 
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/** Where "down" is up, a jump goes down. */
+/** Runs the parts of living movement that assume "down" is -y inside the entity's frame. */
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityMixin {
 
-    @Inject(method = "jumpFromGround", at = @At("TAIL"))
-    private void hillsphereJumpAwayFromFloor(CallbackInfo ci) {
+    @Inject(method = "tick", at = @At("HEAD"))
+    private void hillsphereLookUpTheField(CallbackInfo ci) {
+
+        ((FrameState) this).hillsphereRefresh();
+    }
+
+    @Inject(method = "travel", at = @At("HEAD"))
+    private void hillsphereEnterOnTravel(Vec3 input, CallbackInfo ci) {
+
+        enter();
+    }
+
+    @Inject(method = "travel", at = @At("RETURN"))
+    private void hillsphereLeaveOnTravel(Vec3 input, CallbackInfo ci) {
+
+        leave();
+    }
+
+    @Inject(method = "jumpFromGround", at = @At("HEAD"))
+    private void hillsphereEnterOnJump(CallbackInfo ci) {
+
+        enter();
+    }
+
+    @Inject(method = "jumpFromGround", at = @At("RETURN"))
+    private void hillsphereLeaveOnJump(CallbackInfo ci) {
+
+        leave();
+    }
+
+    /** Velocity becomes virtual: what vanilla thinks of as straight down is where the field pulls. */
+    private void enter() {
 
         final LivingEntity self = (LivingEntity) (Object) this;
-        if (LivingGravity.factor(self) < 0) {
-            final Vec3 v = self.getDeltaMovement();
-            self.setDeltaMovement(v.x, -v.y, v.z);
+        final GravityFrame frame = ((FrameState) this).hillsphereFrame();
+        if (!frame.isVanilla()) {
+            ((FrameState) this).hillsphereInside(true);
+            final Vec3d v = frame.toVirtual(new Vec3d(self.getDeltaMovement().x, self.getDeltaMovement().y, self.getDeltaMovement().z));
+            self.setDeltaMovement(v.x(), v.y(), v.z());
         }
     }
 
-    /** Upside down, the player's left is the world's right. */
-    @ModifyVariable(method = "travel", at = @At("HEAD"), argsOnly = true)
-    private Vec3 hillsphereMirrorSteering(Vec3 input) {
+    private void leave() {
 
         final LivingEntity self = (LivingEntity) (Object) this;
-        return self instanceof Player && LivingGravity.factor(self) < 0 ? new Vec3(-input.x, input.y, input.z) : input;
+        final GravityFrame frame = ((FrameState) this).hillsphereFrame();
+        if (!frame.isVanilla()) {
+            final Vec3d v = frame.toReal(new Vec3d(self.getDeltaMovement().x, self.getDeltaMovement().y, self.getDeltaMovement().z));
+            self.setDeltaMovement(v.x(), v.y(), v.z());
+            ((FrameState) this).hillsphereInside(false);
+        }
     }
 }

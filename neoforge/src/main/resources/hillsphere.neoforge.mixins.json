@@ -4,6 +4,7 @@
   "package": "dev.loki.hillsphere.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "EntityFrameMixin",
     "EntityMixin",
     "LivingEntityMixin",
     "ServerPacketMixin"

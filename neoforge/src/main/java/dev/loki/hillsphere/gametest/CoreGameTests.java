@@ -58,7 +58,7 @@ public final class CoreGameTests {
     }
 
     /** A motor on the core's shaft, spinning at the given speed; returns the core. */
-    private static HillCoreBlockEntity powered(GameTestHelper helper, int rpm, Polarity polarity, int level) {
+    static HillCoreBlockEntity powered(GameTestHelper helper, int rpm, Polarity polarity, int level) {
 
         helper.setBlock(MOTOR, AllBlocks.CREATIVE_MOTOR.getDefaultState().setValue(CreativeMotorBlock.FACING, Direction.EAST));
         helper.setBlock(CORE, ModBlocks.HILL_CORE.get().defaultBlockState().setValue(HillCoreBlock.AXIS, Axis.X));
@@ -68,7 +68,7 @@ public final class CoreGameTests {
         return core;
     }
 
-    @GameTest(template = EMPTY, timeoutTicks = 300)
+    @GameTest(template = EMPTY, timeoutTicks = 300, batch = "coreSpinsUpAndMakesAField")
     public static void coreSpinsUpAndMakesAField(GameTestHelper helper) {
 
         powered(helper, 128, Polarity.ATTRACT, 3);
@@ -80,7 +80,7 @@ public final class CoreGameTests {
         });
     }
 
-    @GameTest(template = EMPTY, timeoutTicks = 300)
+    @GameTest(template = EMPTY, timeoutTicks = 300, batch = "redstoneSwitchesTheFieldOff")
     public static void redstoneSwitchesTheFieldOff(GameTestHelper helper) {
 
         powered(helper, 128, Polarity.REPEL, 2);
@@ -92,7 +92,7 @@ public final class CoreGameTests {
         });
     }
 
-    @GameTest(template = EMPTY)
+    @GameTest(template = EMPTY, batch = "settingsAreIndependentAndSurviveSaving")
     public static void settingsAreIndependentAndSurviveSaving(GameTestHelper helper) {
 
         final HillCoreBlockEntity core = powered(helper, 16, Polarity.REPEL, 4);
@@ -109,7 +109,7 @@ public final class CoreGameTests {
         helper.succeed();
     }
 
-    @GameTest(template = EMPTY, timeoutTicks = 400)
+    @GameTest(template = EMPTY, timeoutTicks = 400, batch = "levitationHoldsAnItemUp")
     public static void levitationHoldsAnItemUp(GameTestHelper helper) {
 
         powered(helper, 128, Polarity.LEVITATE, 3);
@@ -128,7 +128,7 @@ public final class CoreGameTests {
         });
     }
 
-    @GameTest(template = EMPTY, timeoutTicks = 200)
+    @GameTest(template = EMPTY, timeoutTicks = 200, batch = "withoutAFieldAnItemFalls")
     public static void withoutAFieldAnItemFalls(GameTestHelper helper) {
 
         final ItemEntity item = helper.spawnItem(Items.COBBLESTONE, new Vec3(2.5, 4.0, 3.5));
@@ -161,13 +161,13 @@ public final class CoreGameTests {
         });
     }
 
-    @GameTest(template = EMPTY, timeoutTicks = 400)
+    @GameTest(template = EMPTY, timeoutTicks = 400, batch = "anAttractingCoreAboveLiftsAnItem")
     public static void anAttractingCoreAboveLiftsAnItem(GameTestHelper helper) {
 
         raise(helper, Polarity.ATTRACT, 1.0, "an item below an attracting core should be pulled up toward it");
     }
 
-    @GameTest(template = EMPTY, timeoutTicks = 400)
+    @GameTest(template = EMPTY, timeoutTicks = 400, batch = "aRepellingCoreBelowLiftsAnItem")
     public static void aRepellingCoreBelowLiftsAnItem(GameTestHelper helper) {
 
         raise(helper, Polarity.REPEL, 4.6, "an item above a repelling core should be pushed away, up");
