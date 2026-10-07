@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "hillsphere:block/hill_plate"
+    }
+  }
+}

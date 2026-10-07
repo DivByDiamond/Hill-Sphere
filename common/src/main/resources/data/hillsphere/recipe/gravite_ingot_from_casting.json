@@ -1,0 +1,18 @@
+{
+  "type": "create:filling",
+  "ingredients": [
+    {
+      "item": "minecraft:emerald"
+    },
+    {
+      "type": "neoforge:single",
+      "amount": 250,
+      "fluid": "hillsphere:molten_gravite"
+    }
+  ],
+  "results": [
+    {
+      "id": "hillsphere:gravite_ingot"
+    }
+  ]
+}

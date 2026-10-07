@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "hillsphere:gravite_block"
+    }
+  ],
+  "result": {
+    "id": "hillsphere:gravite_ingot",
+    "count": 9
+  }
+}

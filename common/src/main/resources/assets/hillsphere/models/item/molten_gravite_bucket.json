@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "hillsphere:item/molten_gravite_bucket"
+  }
+}

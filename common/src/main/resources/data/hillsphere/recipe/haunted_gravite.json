@@ -1,0 +1,13 @@
+{
+  "type": "create:haunting",
+  "ingredients": [
+    {
+      "item": "hillsphere:crushed_gravite"
+    }
+  ],
+  "results": [
+    {
+      "id": "hillsphere:haunted_gravite"
+    }
+  ]
+}

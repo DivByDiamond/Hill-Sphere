@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "PMP",
+    "CSC",
+    "PMP"
+  ],
+  "key": {
+    "P": {
+      "item": "hillsphere:hill_plate"
+    },
+    "M": {
+      "item": "create:precision_mechanism"
+    },
+    "C": {
+      "item": "create:brass_casing"
+    },
+    "S": {
+      "item": "create:shaft"
+    }
+  },
+  "result": {
+    "id": "hillsphere:hill_core"
+  }
+}

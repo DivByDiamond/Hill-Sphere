@@ -1,0 +1,20 @@
+{
+  "block.hillsphere.hill_core": "Гравитационное ядро",
+  "block.hillsphere.hill_plate": "Плита ядра",
+  "block.hillsphere.deepslate_gravite_ore": "Глубинная гравитовая руда",
+  "block.hillsphere.gravite_block": "Блок гравита",
+  "item.hillsphere.raw_gravite": "Необработанный гравит",
+  "item.hillsphere.gravite_ingot": "Слиток гравита",
+  "item.hillsphere.gravite_sheet": "Гравитовая пластина",
+  "item.hillsphere.crushed_gravite": "Дроблёный гравит",
+  "item.hillsphere.haunted_gravite": "Призрачный гравит",
+  "item.hillsphere.hill_goggles": "Гравитационные очки",
+  "hillsphere.core.polarity": "Полярность",
+  "hillsphere.core.polarity.attract": "Притяжение",
+  "hillsphere.core.polarity.repel": "Отталкивание",
+  "hillsphere.core.polarity.levitate": "Невесомость",
+  "hillsphere.core.level": "Уровень силы",
+  "block.hillsphere.molten_gravite": "Расплавленный гравит",
+  "fluid_type.hillsphere.molten_gravite": "Расплавленный гравит",
+  "item.hillsphere.molten_gravite_bucket": "Ведро расплавленного гравита"
+}
