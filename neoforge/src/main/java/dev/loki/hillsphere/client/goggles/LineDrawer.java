@@ -21,12 +21,11 @@ package dev.loki.hillsphere.client.goggles;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 
+import net.minecraft.core.Direction;
 import net.minecraft.world.phys.Vec3;
 
 /** Draws coloured lines and simple shapes into a line buffer. */
 final class LineDrawer {
-
-    private static final int CIRCLE_SEGMENTS = 40;
 
     private final VertexConsumer buffer;
     private final PoseStack.Pose pose;
@@ -66,25 +65,30 @@ final class LineDrawer {
         line(tip, tip.add(back).subtract(side));
     }
 
-    /** A circle in one of the coordinate planes (axis 0 = around X, 1 = around Y, 2 = around Z). */
-    void circle(Vec3 center, double radius, int axis, double offset) {
+    /** The outline of a square lying on a block face; {@code half} is half its edge. */
+    void square(Vec3 center, Direction face, double half) {
 
-        final double r = Math.sqrt(Math.max(0, radius * radius - offset * offset));
-        Vec3 previous = null;
-        for (int i = 0; i <= CIRCLE_SEGMENTS; i++) {
-            final double a = 2 * Math.PI * i / CIRCLE_SEGMENTS;
-            final double u = Math.cos(a) * r;
-            final double v = Math.sin(a) * r;
-            final Vec3 point = center.add(switch (axis) {
-                case 0 -> new Vec3(offset, u, v);
-                case 1 -> new Vec3(u, offset, v);
-                default -> new Vec3(u, v, offset);
-            });
-            if (previous != null) {
-                line(previous, point);
-            }
-            previous = point;
-        }
+        final Vec3 u = tangent(face, 0).scale(half);
+        final Vec3 v = tangent(face, 1).scale(half);
+        final Vec3 a = center.add(u).add(v);
+        final Vec3 b = center.add(u).subtract(v);
+        final Vec3 c = center.subtract(u).subtract(v);
+        final Vec3 d = center.subtract(u).add(v);
+        line(a, b);
+        line(b, c);
+        line(c, d);
+        line(d, a);
+    }
+
+    /** One of the two unit axes along the face. */
+    private static Vec3 tangent(Direction face, int index) {
+
+        final Direction.Axis[] axes = switch (face.getAxis()) {
+            case X -> new Direction.Axis[] {Direction.Axis.Y, Direction.Axis.Z};
+            case Y -> new Direction.Axis[] {Direction.Axis.X, Direction.Axis.Z};
+            case Z -> new Direction.Axis[] {Direction.Axis.X, Direction.Axis.Y};
+        };
+        return Vec3.atLowerCornerOf(Direction.get(Direction.AxisDirection.POSITIVE, axes[index]).getNormal());
     }
 
     private void vertex(Vec3 p, Vec3 normal) {

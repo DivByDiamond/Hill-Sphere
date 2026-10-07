@@ -21,6 +21,7 @@ package dev.loki.hillsphere.client;
 import com.simibubi.create.content.kinetics.base.SingleAxisRotatingVisual;
 import dev.engine_room.flywheel.lib.visualization.SimpleBlockEntityVisualizer;
 import dev.loki.hillsphere.Constants;
+import dev.loki.hillsphere.client.goggles.CoreReadout;
 import dev.loki.hillsphere.client.goggles.GogglesRenderer;
 import dev.loki.hillsphere.registry.ModBlockEntities;
 import dev.loki.hillsphere.world.ClientFields;
@@ -33,6 +34,7 @@ import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsE
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.client.event.RenderGuiEvent;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.common.NeoForge;
@@ -51,6 +53,7 @@ public final class ClientInit {
         modBus.addListener(ClientInit::registerFluidTextures);
         NeoForge.EVENT_BUS.addListener(ClientTickEvent.Post.class, ZeroGravityControls::tick);
         NeoForge.EVENT_BUS.addListener(RenderLevelStageEvent.class, GogglesRenderer::onRender);
+        NeoForge.EVENT_BUS.addListener(RenderGuiEvent.Post.class, CoreReadout::onRender);
         NeoForge.EVENT_BUS.addListener(ClientPlayerNetworkEvent.LoggingOut.class, e -> ClientFields.clear());
     }
 

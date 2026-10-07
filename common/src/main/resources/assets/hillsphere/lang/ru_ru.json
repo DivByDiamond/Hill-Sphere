@@ -16,5 +16,13 @@
   "hillsphere.core.level": "Уровень силы",
   "block.hillsphere.molten_gravite": "Расплавленный гравит",
   "fluid_type.hillsphere.molten_gravite": "Расплавленный гравит",
-  "item.hillsphere.molten_gravite_bucket": "Ведро расплавленного гравита"
+  "item.hillsphere.molten_gravite_bucket": "Ведро расплавленного гравита",
+  "hillsphere.readout.state": "Состояние: %s",
+  "hillsphere.readout.speed": "Скорость: %s об/мин",
+  "hillsphere.readout.radius": "Радиус поля: %s бл.",
+  "hillsphere.readout.load": "Нагрузка: %s SU",
+  "hillsphere.readout.working": "работает",
+  "hillsphere.readout.slow": "слишком медленно, поля нет",
+  "hillsphere.readout.redstone": "выключено редстоуном",
+  "hillsphere.readout.overstressed": "перегрузка"
 }
