@@ -20,18 +20,15 @@ package dev.loki.hillsphere.client.goggles;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import dev.loki.hillsphere.field.Polarity;
 import dev.loki.hillsphere.field.math.Vec3d;
-import dev.loki.hillsphere.field.resolve.CoreField;
 import dev.loki.hillsphere.field.resolve.Gravity;
-import dev.loki.hillsphere.config.HillSphereConfig;
 import dev.loki.hillsphere.item.HillGogglesItem;
 import dev.loki.hillsphere.world.ClientFields;
 
-import java.util.Comparator;
-import java.util.List;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.BlockPos;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -39,18 +36,16 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 
 /**
- * What the goggles show: the boundary of every nearby field, its full-strength core, and short arrows
- * around the wearer that point where "down" is. Everything is drawn on the client only.
+ * What the goggles show: the block faces you can stand on in a field, and short arrows around the wearer
+ * that point where "down" is. Everything is drawn on the client only.
  */
 public final class GogglesRenderer {
 
-    private static final double RANGE = 96;
-    private static final int MAX_CORES = 16;
+    private static final SurfaceScanner SCANNER = new SurfaceScanner();
     private static final int ARROW_GRID = 2;
     private static final double ARROW_SPACING = 2.5;
 
     private static final float[] ATTRACT = {0.25f, 0.85f, 0.9f};
-    private static final float[] REPEL = {1f, 0.63f, 0.23f};
     private static final float[] LEVITATE = {0.54f, 0.42f, 1f};
 
     private GogglesRenderer() {
@@ -72,37 +67,20 @@ public final class GogglesRenderer {
         stack.pushPose();
         stack.translate(-camera.x, -camera.y, -camera.z);
         final PoseStack.Pose pose = stack.last();
-        nearestCores(camera).forEach(core -> drawField(lines, pose, core));
+        drawSurfaces(lines, pose, mc.level, player.blockPosition());
         drawArrows(lines, pose, player.position().add(0, player.getBbHeight() / 2, 0));
         stack.popPose();
         buffers.endBatch(RenderType.lines());
     }
 
-    private static List<CoreField> nearestCores(Vec3 camera) {
+    /** Highlights every face you could stand on in a field, with the field's own idea of "up". */
+    private static void drawSurfaces(VertexConsumer lines, PoseStack.Pose pose, ClientLevel level, BlockPos origin) {
 
-        final Vec3d eye = new Vec3d(camera.x, camera.y, camera.z);
-        return ClientFields.field().cores().stream()
-                .filter(c -> c.center().sub(eye).length() < RANGE + c.radius())
-                .sorted(Comparator.comparingDouble(c -> c.center().sub(eye).length()))
-                .limit(MAX_CORES)
-                .toList();
-    }
-
-    /** Two spheres, drawn as rings: the edge of the field and the part where the pull is full. */
-    private static void drawField(VertexConsumer lines, PoseStack.Pose pose, CoreField core) {
-
-        final Vec3 center = new Vec3(core.center().x(), core.center().y(), core.center().z());
-        sphere(new LineDrawer(lines, pose, colorOf(core.polarity()), 0.9f), center, core.radius());
-        sphere(new LineDrawer(lines, pose, colorOf(core.polarity()), 0.35f), center, core.radius() * HillSphereConfig.tuning().plateau());
-    }
-
-    private static void sphere(LineDrawer drawer, Vec3 center, double radius) {
-
-        for (int axis = 0; axis < 3; axis++) {
-            drawer.circle(center, radius, axis, 0);
-        }
-        for (final double fraction : new double[] {-0.5, 0.5}) {
-            drawer.circle(center, radius, 1, radius * fraction);
+        final LineDrawer outer = new LineDrawer(lines, pose, ATTRACT, 0.9f);
+        final LineDrawer inner = new LineDrawer(lines, pose, ATTRACT, 0.35f);
+        for (final SurfaceScanner.Surface surface : SCANNER.around(level, origin)) {
+            outer.square(surface.center(), surface.face(), 0.5);
+            inner.square(surface.center(), surface.face(), 0.3);
         }
     }
 
@@ -131,14 +109,5 @@ public final class GogglesRenderer {
             final Vec3d d = g.direction();
             new LineDrawer(lines, pose, ATTRACT, 0.8f).arrow(at, new Vec3(d.x(), d.y(), d.z()).scale(Math.min(1.5, g.strength())));
         }
-    }
-
-    private static float[] colorOf(Polarity polarity) {
-
-        return switch (polarity) {
-            case ATTRACT -> ATTRACT;
-            case REPEL -> REPEL;
-            case LEVITATE -> LEVITATE;
-        };
     }
 }

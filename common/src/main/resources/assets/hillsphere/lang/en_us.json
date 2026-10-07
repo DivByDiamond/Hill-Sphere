@@ -16,5 +16,13 @@
   "hillsphere.core.level": "Strength level",
   "block.hillsphere.molten_gravite": "Molten Gravite",
   "fluid_type.hillsphere.molten_gravite": "Molten Gravite",
-  "item.hillsphere.molten_gravite_bucket": "Molten Gravite Bucket"
+  "item.hillsphere.molten_gravite_bucket": "Molten Gravite Bucket",
+  "hillsphere.readout.state": "State: %s",
+  "hillsphere.readout.speed": "Speed: %s RPM",
+  "hillsphere.readout.radius": "Field radius: %s blocks",
+  "hillsphere.readout.load": "Load: %s SU",
+  "hillsphere.readout.working": "working",
+  "hillsphere.readout.slow": "too slow, no field",
+  "hillsphere.readout.redstone": "off by redstone",
+  "hillsphere.readout.overstressed": "overstressed"
 }
