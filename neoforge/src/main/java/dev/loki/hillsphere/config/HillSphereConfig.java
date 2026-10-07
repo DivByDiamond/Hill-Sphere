@@ -52,6 +52,7 @@ public final class HillSphereConfig {
     private static final ModConfigSpec.DoubleValue BLEND_END;
     private static final ModConfigSpec.IntValue RAMP_TICKS;
     private static final ModConfigSpec.IntValue MAX_CORES;
+    private static final ModConfigSpec.ConfigValue<List<? extends String>> DIMENSIONS;
     private static final ModConfigSpec.ConfigValue<List<? extends Double>> STRENGTHS;
     private static final ModConfigSpec.ConfigValue<List<? extends Double>> LEVITATION;
 
@@ -82,6 +83,8 @@ public final class HillSphereConfig {
         RAMP_TICKS = b.comment("Ticks a field takes to grow or fade").defineInRange("rampTicks", d.rampTicks(), 1, 1200);
         b.pop();
 
+        DIMENSIONS = b.comment("Pull multiplier per dimension, as dimension=multiplier; unlisted dimensions use 1")
+                .defineList("dimensionScale", DimensionScale.DEFAULTS, () -> "minecraft:overworld=1.0", o -> o instanceof String);
         MAX_CORES = b.comment("Most active cores per world; more are ignored").defineInRange("maxCores", DEFAULT_MAX_CORES, 1, 100_000);
         SPEC = b.build();
     }
@@ -101,6 +104,7 @@ public final class HillSphereConfig {
         if (event.getConfig().getSpec() == SPEC) {
             CURRENT.set(build());
             MAX_CORES_NOW.set(MAX_CORES.get());
+            DimensionScale.load(DIMENSIONS.get());
             WorldFields.clear();
         }
     }

@@ -63,4 +63,18 @@ public final class LivingGameTests {
             });
         });
     }
+
+    @GameTest(template = "empty", timeoutTicks = 400)
+    public static void aLongFallUpHurtsOnTheCeiling(GameTestHelper helper) {
+
+        CoreGameTests.liftCore(helper, Polarity.ATTRACT);
+        helper.runAfterDelay(100, () -> {
+            final Mob pig = helper.spawnWithNoFreeWill(EntityType.PIG, new Vec3(2.5, 1.0, 3.5));
+            pig.fallDistance = 10;
+            helper.runAfterDelay(80, () -> {
+                helper.assertTrue(pig.getHealth() < pig.getMaxHealth(), "a long fall up should hurt, health " + pig.getHealth());
+                helper.succeed();
+            });
+        });
+    }
 }
