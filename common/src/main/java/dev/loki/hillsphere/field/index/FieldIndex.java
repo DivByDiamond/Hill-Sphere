@@ -35,6 +35,12 @@ import java.util.Map;
  */
 public final class FieldIndex<K> {
 
+    /** A core may span at most this many cells along an axis; anything larger is refused, not indexed. */
+    private static final int MAX_CELLS_PER_AXIS = 16;
+
+    /** Cell numbers stay below 2^30 in size, far from int overflow. */
+    private static final double COORDINATE_LIMIT_IN_CELLS = 1 << 29;
+
     private final double cellSize;
     private final int maxCores;
     private final Map<K, Entry> entries = new HashMap<>();
@@ -62,13 +68,23 @@ public final class FieldIndex<K> {
      * Adds a core or updates the existing one with the same key. A core with no radius is
      * the same as a stopped one and is removed from the index.
      *
-     * @return false if the core is new and the index is already full
+     * @return false if the core is new and the index is already full, or if the core is not a sane
+     *     field (not finite, or so large it would span more than {@value #MAX_CELLS_PER_AXIS} cells)
      */
     public boolean put(K key, CoreField field) {
 
+        if (!isSane(field)) {
+            remove(key);
+            return false;
+        }
         if (field.radius() <= 0) {
             remove(key);
             return true;
+        }
+        final List<Cell> covered = cellsOf(field);
+        if (covered.isEmpty()) {
+            remove(key);
+            return false;
         }
         final Entry old = entries.get(key);
         if (old == null && entries.size() >= maxCores) {
@@ -77,12 +93,22 @@ public final class FieldIndex<K> {
         if (old != null) {
             unlink(key, old);
         }
-        final Entry entry = new Entry(field, cellsOf(field));
+        final Entry entry = new Entry(field, covered);
         entries.put(key, entry);
         for (final Cell cell : entry.cells) {
             cells.computeIfAbsent(cell, c -> new ArrayList<>()).add(key);
         }
         return true;
+    }
+
+    /** Every core in the index, in no particular order. */
+    public List<CoreField> all() {
+
+        final List<CoreField> result = new ArrayList<>(entries.size());
+        for (final Entry entry : entries.values()) {
+            result.add(entry.field);
+        }
+        return result;
     }
 
     public void remove(K key) {
@@ -120,10 +146,24 @@ public final class FieldIndex<K> {
         }
     }
 
+    /** True if the core is finite and lies where cell numbers cannot overflow. */
+    private boolean isSane(CoreField f) {
+
+        final double limit = cellSize * COORDINATE_LIMIT_IN_CELLS;
+        return Double.isFinite(f.radius()) && f.radius() < limit
+                && Math.abs(f.center().x()) < limit && Math.abs(f.center().y()) < limit
+                && Math.abs(f.center().z()) < limit;
+    }
+
+    /** The cells a core touches; empty if that would be more than {@value #MAX_CELLS_PER_AXIS} per axis. */
     private List<Cell> cellsOf(CoreField f) {
 
         final Cell lo = cellOf(new Vec3d(f.center().x() - f.radius(), f.center().y() - f.radius(), f.center().z() - f.radius()));
         final Cell hi = cellOf(new Vec3d(f.center().x() + f.radius(), f.center().y() + f.radius(), f.center().z() + f.radius()));
+        if (span(lo.x, hi.x) > MAX_CELLS_PER_AXIS || span(lo.y, hi.y) > MAX_CELLS_PER_AXIS
+                || span(lo.z, hi.z) > MAX_CELLS_PER_AXIS) {
+            return List.of();
+        }
         final List<Cell> result = new ArrayList<>();
         for (int x = lo.x; x <= hi.x; x++) {
             for (int y = lo.y; y <= hi.y; y++) {
@@ -133,6 +173,11 @@ public final class FieldIndex<K> {
             }
         }
         return result;
+    }
+
+    private static long span(int lo, int hi) {
+
+        return (long) hi - lo + 1;
     }
 
     private Cell cellOf(Vec3d p) {

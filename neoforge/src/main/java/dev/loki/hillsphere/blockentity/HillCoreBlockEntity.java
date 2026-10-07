@@ -24,6 +24,7 @@ import dev.loki.hillsphere.block.FieldState;
 import dev.loki.hillsphere.block.HillCoreBlock;
 import dev.loki.hillsphere.blockentity.setting.CoreSettingSlot;
 import dev.loki.hillsphere.blockentity.setting.PolarityBehaviour;
+import dev.loki.hillsphere.blockentity.setting.PolarityOption;
 import dev.loki.hillsphere.blockentity.setting.StepSettingBehaviour;
 import dev.loki.hillsphere.config.HillSphereConfig;
 import dev.loki.hillsphere.field.CoreDriver;
@@ -95,9 +96,21 @@ public class HillCoreBlockEntity extends KineticBlockEntity {
         super.remove();
     }
 
-    private Polarity polarityValue() {
+    public Polarity polarityValue() {
 
         return polarity.get().polarity();
+    }
+
+    public int getStrengthLevel() {
+
+        return strengthLevel.getValue();
+    }
+
+    /** Sets both settings at once, as a player would with the two panels. */
+    public void configure(Polarity newPolarity, int level) {
+
+        polarity.setValue(PolarityOption.valueOf(newPolarity.name()).ordinal());
+        strengthLevel.setValue(level);
     }
 
     /** Mirrors the field into the block state, which drives the model. */

@@ -45,6 +45,11 @@ neoForge {
         create("server") {
             server()
         }
+        create("gameTestServer") {
+            type = "gameTestServer"
+            // its own game folder: the client mods in run/mods must not load into a headless server
+            gameDirectory = layout.projectDirectory.dir("run/gametest")
+        }
     }
     mods {
         register(modId) {

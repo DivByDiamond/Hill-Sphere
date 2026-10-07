@@ -3,7 +3,11 @@
   "minVersion": "0.8",
   "package": "dev.loki.hillsphere.mixin",
   "compatibilityLevel": "JAVA_21",
-  "mixins": [],
+  "mixins": [
+    "EntityMixin",
+    "LivingEntityMixin",
+    "ServerPacketMixin"
+  ],
   "client": [],
   "server": [],
   "injectors": {
