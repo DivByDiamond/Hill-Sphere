@@ -23,9 +23,11 @@ import dev.loki.hillsphere.field.math.Vec3d;
 import dev.loki.hillsphere.field.resolve.Gravity;
 import dev.loki.hillsphere.world.FieldLookup;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -81,6 +83,20 @@ public abstract class EntityMixin {
         final Entity self = (Entity) (Object) this;
         if (movement.y > 0 && self.verticalCollision && LivingGravity.factor(self) < 0) {
             self.setOnGround(true);
+            if (self.fallDistance > 0) {
+                self.causeFallDamage(self.fallDistance, 1f, self.damageSources().fall());
+                self.resetFallDistance();
+            }
+        }
+    }
+
+    /** Falling up counts as falling: the distance adds up the same way and is paid for on the ceiling. */
+    @Inject(method = "checkFallDamage", at = @At("HEAD"))
+    private void hillsphereFallUp(double y, boolean onGround, BlockState state, BlockPos pos, CallbackInfo ci) {
+
+        final Entity self = (Entity) (Object) this;
+        if (y > 0 && !onGround && LivingGravity.factor(self) < 0) {
+            self.fallDistance += (float) y;
         }
     }
 }

@@ -18,6 +18,7 @@
  */
 package dev.loki.hillsphere.world;
 
+import dev.loki.hillsphere.config.DimensionScale;
 import dev.loki.hillsphere.field.GravityField;
 import dev.loki.hillsphere.field.math.Vec3d;
 import dev.loki.hillsphere.field.resolve.Gravity;
@@ -52,7 +53,8 @@ public final class FieldLookup {
             return Gravity.VANILLA;
         }
         final Vec3 c = entity.getBoundingBox().getCenter();
-        return field.planetAt(new Vec3d(c.x, c.y, c.z));
+        final Gravity planet = field.planetAt(new Vec3d(c.x, c.y, c.z));
+        return Gravity.VANILLA.equals(planet) ? planet : new Gravity(planet.direction(), planet.strength() * DimensionScale.of(entity.level()));
     }
 
     private static GravityField<BlockPos> fieldOf(Level level) {
