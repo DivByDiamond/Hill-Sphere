@@ -47,7 +47,7 @@ public final class GravityResolver {
     }
 
     /** Total share of gravity cancelled by levitation cores in the point; they add up. */
-    private double liftAt(Collection<CoreField> cores, Vec3d point) {
+    public double liftAt(Collection<CoreField> cores, Vec3d point) {
 
         double lift = 0;
         for (final CoreField core : cores) {
@@ -58,7 +58,8 @@ public final class GravityResolver {
         return lift;
     }
 
-    private Gravity planetAt(Collection<CoreField> cores, Vec3d point) {
+    /** Gravity from attracting and repelling cores only, without levitation. */
+    public Gravity planetAt(Collection<CoreField> cores, Vec3d point) {
 
         Candidate best = null;
         Candidate second = null;

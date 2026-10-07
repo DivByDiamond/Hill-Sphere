@@ -89,6 +89,46 @@ class FieldIndexTest {
     }
 
     @Test
+    void refusesFieldsThatWouldSpanAbsurdlyManyCells() {
+
+        final FieldIndex<String> index = new FieldIndex<>(16, 10);
+        assertFalse(index.put("huge", core(0, 0, 0, 1e9)));
+        assertFalse(index.put("far", core(Integer.MAX_VALUE * 16.0, 0, 0, 5)));
+        assertEquals(0, index.size());
+    }
+
+    @Test
+    void refusesNonFiniteFields() {
+
+        final FieldIndex<String> index = new FieldIndex<>(16, 10);
+        assertFalse(index.put("nan", core(0, 0, 0, Double.NaN)));
+        assertFalse(index.put("inf", core(0, 0, 0, Double.POSITIVE_INFINITY)));
+        assertFalse(index.put("nancenter", core(Double.NaN, 0, 0, 5)));
+        assertEquals(0, index.size());
+    }
+
+    @Test
+    void aRefusedUpdateDropsTheOldEntry() {
+
+        final FieldIndex<String> index = new FieldIndex<>(16, 10);
+        index.put("a", core(0, 0, 0, 5));
+        assertFalse(index.put("a", core(0, 0, 0, 1e9)));
+        assertEquals(0, index.size());
+        assertTrue(index.candidatesAt(new Vec3d(0, 0, 0)).isEmpty());
+    }
+
+    @Test
+    void listsAllCoresOnce() {
+
+        final FieldIndex<String> index = new FieldIndex<>(16, 10);
+        index.put("a", core(0, 0, 0, 20));
+        index.put("b", core(100, 0, 0, 5));
+        assertEquals(2, index.all().size());
+        index.remove("a");
+        assertEquals(1, index.all().size());
+    }
+
+    @Test
     void rejectsBadConfiguration() {
 
         assertThrows(IllegalArgumentException.class, () -> new FieldIndex<String>(0, 1));

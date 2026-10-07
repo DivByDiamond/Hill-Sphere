@@ -52,9 +52,30 @@ public final class GravityField<K> {
         index.remove(key);
     }
 
+    /** Every active core, for drawing or listing. */
+    public java.util.List<CoreField> cores() {
+
+        return index.all();
+    }
+
     public int size() {
 
         return index.size();
+    }
+
+    /**
+     * How much of gravity the levitation cores cancel in the point: 0 none, 1 all of it, above 1 more
+     * than all. Unlike {@link #gravityAt} it ignores attracting and repelling cores.
+     */
+    public double liftAt(Vec3d point) {
+
+        return resolver.liftAt(index.candidatesAt(point), point);
+    }
+
+    /** Gravity from attracting and repelling cores only: where "down" points and how strongly, before levitation. */
+    public Gravity planetAt(Vec3d point) {
+
+        return resolver.planetAt(index.candidatesAt(point), point);
     }
 
     public Gravity gravityAt(Vec3d point) {
