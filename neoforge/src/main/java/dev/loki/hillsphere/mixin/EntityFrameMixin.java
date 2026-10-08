@@ -19,6 +19,7 @@
 package dev.loki.hillsphere.mixin;
 
 import dev.loki.hillsphere.entity.FrameState;
+import dev.loki.hillsphere.entity.FrameSwitch;
 import dev.loki.hillsphere.entity.LivingGravity;
 import dev.loki.hillsphere.field.frame.GravityFrame;
 import dev.loki.hillsphere.field.math.Vec3d;
@@ -26,7 +27,6 @@ import dev.loki.hillsphere.field.resolve.Gravity;
 import dev.loki.hillsphere.world.FieldLookup;
 
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
@@ -50,19 +50,9 @@ public abstract class EntityFrameMixin implements FrameState {
 
     private static final double SLACK = 1e-7;
 
-    /** In the air a frame is kept while the pull is within 60 degrees of its "down". */
-    private static final double KEEP_IN_AIR = 0.5;
-
-    /** On the ground it is kept until the pull points well above the horizon, so a platform stays a floor beside the core. */
-    private static final double KEEP_ON_GROUND = -0.4;
-
-    /** Ticks a new direction must hold before the frame follows it. */
-    private static final int DWELL_TICKS = 4;
-
     @Unique private GravityFrame hillsphereFrame = GravityFrame.DOWN;
     @Unique private double hillsphereStrength = 1;
-    @Unique private GravityFrame hillsphereCandidate = GravityFrame.DOWN;
-    @Unique private int hillsphereDwell;
+    @Unique private final FrameSwitch hillsphereSwitch = new FrameSwitch();
     @Unique private boolean hillsphereInside;
     @Unique private Vec3 hillsphereFrom = Vec3.ZERO;
     @Unique private Vec3 hillsphereAsked = Vec3.ZERO;
@@ -93,53 +83,11 @@ public abstract class EntityFrameMixin implements FrameState {
 
         final Entity self = (Entity) (Object) this;
         final Gravity planet = FieldLookup.planetAt(self);
-        final boolean vanilla = Gravity.VANILLA.equals(planet);
-        hillsphereStrength = vanilla ? 1 : planet.strength();
-        if (vanilla) {
-            turnTo(self, GravityFrame.DOWN);
-            return;
+        hillsphereStrength = Gravity.VANILLA.equals(planet) ? 1 : planet.strength();
+        final GravityFrame next = hillsphereSwitch.next(self, hillsphereFrame, planet);
+        if (next != hillsphereFrame && hillsphereSwitch.turn(self, hillsphereFrame, next)) {
+            hillsphereFrame = next;
         }
-        final Vec3d pull = planet.direction();
-        final GravityFrame wanted = GravityFrame.of(pull);
-        if (wanted == hillsphereFrame || pull.dot(hillsphereFrame.toReal(Vec3d.DOWN)) > (self.onGround() ? KEEP_ON_GROUND : KEEP_IN_AIR)) {
-            hillsphereDwell = 0;
-            return;
-        }
-        hillsphereDwell = wanted == hillsphereCandidate ? hillsphereDwell + 1 : 1;
-        hillsphereCandidate = wanted;
-        if (hillsphereDwell >= DWELL_TICKS) {
-            turnTo(self, wanted);
-        }
-    }
-
-    /** Switches frame around the middle of the body, and only if the turned body has room; else waits. */
-    @Unique
-    private void turnTo(Entity self, GravityFrame frame) {
-
-        if (frame == hillsphereFrame) {
-            return;
-        }
-        final Vec3 center = self.getBoundingBox().getCenter();
-        final EntityDimensions size = self.getDimensions(self.getPose());
-        final Vec3d off = frame.toReal(new Vec3d(0, -size.height() / 2, 0));
-        final Vec3 feet = new Vec3(center.x + off.x(), center.y + off.y(), center.z + off.z());
-        if (!self.level().noCollision(self, LivingGravity.box(frame, feet, size))) {
-            return;
-        }
-        dropSpeedAlongTheOldDown(self);
-        hillsphereFrame = frame;
-        hillsphereDwell = 0;
-        self.setPos(feet);
-    }
-
-    /** What was fallen so far must not carry on as sideways flight once "down" has turned. */
-    @Unique
-    private void dropSpeedAlongTheOldDown(Entity self) {
-
-        final Vec3d down = hillsphereFrame.toReal(Vec3d.DOWN);
-        final Vec3 v = self.getDeltaMovement();
-        final double along = v.x * down.x() + v.y * down.y() + v.z * down.z();
-        self.setDeltaMovement(v.x - along * down.x(), v.y - along * down.y(), v.z - along * down.z());
     }
 
     @Inject(method = "makeBoundingBox", at = @At("RETURN"), cancellable = true)
