@@ -37,14 +37,14 @@ import net.minecraft.world.level.block.state.properties.IntegerProperty;
 /** The gravity core: a Create rotation consumer whose shaft runs through it along its axis. */
 public class HillCoreBlock extends RotatedPillarKineticBlock implements IBE<HillCoreBlockEntity> {
 
-    public static final int MAX_LEVEL = 4;
+    public static final int MAX_LEVEL = 6;
     public static final EnumProperty<FieldState> FIELD = EnumProperty.create("field", FieldState.class);
-    public static final IntegerProperty LEVEL = IntegerProperty.create("level", 1, MAX_LEVEL);
+    public static final IntegerProperty LEVEL = IntegerProperty.create("level", 0, MAX_LEVEL);
 
     public HillCoreBlock(Properties properties) {
 
         super(properties);
-        registerDefaultState(defaultBlockState().setValue(FIELD, FieldState.OFF).setValue(LEVEL, 1));
+        registerDefaultState(defaultBlockState().setValue(FIELD, FieldState.OFF).setValue(LEVEL, 0));
     }
 
     @Override

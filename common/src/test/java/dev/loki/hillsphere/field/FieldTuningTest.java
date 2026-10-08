@@ -33,9 +33,9 @@ class FieldTuningTest {
     @Test
     void levitationLevelsAreClamped() {
 
-        assertEquals(0.25, T.levitation(0), EPS);
-        assertEquals(1.0, T.levitation(3), EPS);
-        assertEquals(1.25, T.levitation(99), EPS);
+        assertEquals(0, T.levitation(0), EPS);
+        assertEquals(1.0, T.levitation(4), EPS);
+        assertEquals(1.5, T.levitation(99), EPS);
     }
 
     @Test
@@ -75,17 +75,28 @@ class FieldTuningTest {
     @Test
     void strengthLevelsAreClamped() {
 
+        assertEquals(0, T.strength(0), EPS);
+        assertEquals(0, T.strength(-3), EPS);
         assertEquals(0.25, T.strength(1), EPS);
-        assertEquals(1.5, T.strength(4), EPS);
-        assertEquals(0.25, T.strength(0), EPS);
-        assertEquals(1.5, T.strength(9), EPS);
+        assertEquals(2.0, T.strength(6), EPS);
+        assertEquals(2.0, T.strength(9), EPS);
+    }
+
+    @Test
+    void fractionalLevelsRunInAStraightLineBetweenEntries() {
+
+        assertEquals(0.125, T.strength(0.5), EPS);
+        assertEquals(1.0 + 0.8 * 0.5, T.strength(4.8), EPS);
+        assertEquals(0.75, T.levitation(3), EPS);
     }
 
     @Test
     void stressScalesWithSpeedAndLevel() {
 
-        assertEquals(4096, T.stress(256, 4), EPS);
+        assertEquals(6144, T.stress(256, 6), EPS);
         assertEquals(256, T.stress(64, 1), EPS);
+        assertEquals(0, T.stress(64, 0), EPS);
+        assertEquals(128, T.stress(64, 0.5), EPS);
     }
 
     @Test

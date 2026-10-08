@@ -50,7 +50,7 @@ public record FieldTuning(
         int rampTicks) {
 
     public static final FieldTuning DEFAULT = new FieldTuning(
-            8, 256, 2, 32, 0.6, List.of(0.25, 0.5, 1.0, 1.5), List.of(0.25, 0.5, 1.0, 1.25), 4, 1.0, 1.25, 30);
+            8, 256, 2, 32, 0.6, List.of(0.25, 0.5, 0.75, 1.0, 1.5, 2.0), List.of(0.25, 0.5, 0.75, 1.0, 1.25, 1.5), 4, 1.0, 1.25, 30);
 
     public FieldTuning {
 
@@ -92,23 +92,35 @@ public record FieldTuning(
         return minRadius + (maxRadius - minRadius) * Math.min(speed, maxRpm) / maxRpm;
     }
 
-    /** Pull for a 1-based strength level, clamped into the valid range. */
-    public double strength(int level) {
+    /** Pull for a strength level: 0 is nothing, 1 the first entry, fractions run in a straight line between entries. */
+    public double strength(double level) {
 
-        return levelStrengths.get(Math.max(1, Math.min(level, levels())) - 1);
+        return along(levelStrengths, level);
     }
 
-    /** Levitation share for a 1-based level, clamped into the valid range. */
-    public double levitation(int level) {
+    /** Levitation share for a level, with the same scale as {@link #strength(double)}. */
+    public double levitation(double level) {
 
-        return levitationLevels.get(Math.max(1, Math.min(level, levitationLevels.size())) - 1);
+        return along(levitationLevels, level);
     }
 
-    /** Stress the core puts on the network, in SU. */
-    public double stress(double rpm, int level) {
+    /** Stress the core puts on the network, in SU; it grows in proportion to the level. */
+    public double stress(double rpm, double level) {
 
-        final int clamped = Math.max(1, Math.min(level, levels()));
-        return Math.abs(rpm) * stressPerRpmPerLevel * clamped;
+        return Math.abs(rpm) * stressPerRpmPerLevel * Math.max(0, Math.min(level, levels()));
+    }
+
+    private static double along(List<Double> table, double level) {
+
+        if (!(level > 0)) {
+            return 0;
+        }
+        if (level >= table.size()) {
+            return table.get(table.size() - 1);
+        }
+        final int whole = (int) level;
+        final double from = whole == 0 ? 0 : table.get(whole - 1);
+        return from + (table.get(whole) - from) * (level - whole);
     }
 
     /** Pull falloff: 1 on the plateau, smoothly down to 0 at the radius. {@code x} is distance / radius. */

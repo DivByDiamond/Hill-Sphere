@@ -27,18 +27,8 @@ import net.minecraft.core.Direction.Axis;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
-/**
- * Where a setting sits on the core: the strength level on the face opposite the window, the
- * polarity on a side face next to it.
- */
+/** Where the settings panel sits on the core: the face opposite the window. */
 public final class CoreSettingSlot extends ValueBoxTransform.Sided {
-
-    private final boolean polarity;
-
-    public CoreSettingSlot(boolean polarity) {
-
-        this.polarity = polarity;
-    }
 
     @Override
     protected Vec3 getSouthLocation() {
@@ -49,19 +39,15 @@ public final class CoreSettingSlot extends ValueBoxTransform.Sided {
     @Override
     protected boolean isSideActive(BlockState state, Direction direction) {
 
-        return direction == faceOf(state.getValue(HillCoreBlock.AXIS), polarity);
+        return direction == faceOf(state.getValue(HillCoreBlock.AXIS));
     }
 
     /**
-     * The face a setting sits on, for a given shaft axis. The window is on the model's east face; the
-     * level panel is on the opposite (west) face and the polarity panel on the south face. The
-     * directions follow the rotations the blockstate gives each axis.
+     * The face for a given shaft axis. The window is on the model's east face and the panel on the opposite
+     * (west) face; the directions follow the rotations the blockstate gives each axis.
      */
-    static Direction faceOf(Axis shaft, boolean polarity) {
+    static Direction faceOf(Axis shaft) {
 
-        if (polarity) {
-            return shaft == Axis.Y ? Direction.SOUTH : Direction.UP;
-        }
         return shaft == Axis.X ? Direction.NORTH : Direction.WEST;
     }
 

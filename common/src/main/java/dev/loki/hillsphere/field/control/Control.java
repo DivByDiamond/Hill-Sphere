@@ -16,27 +16,15 @@
  * You should have received a copy of the GNU General Public License
  * along with Hill Sphere. If not, see <https://www.gnu.org/licenses/>.
  */
-package dev.loki.hillsphere.field;
+package dev.loki.hillsphere.field.control;
 
-/** What a core does to the world around it. */
-public enum Polarity {
+import dev.loki.hillsphere.field.Polarity;
 
-    /** "Down" points at the core. */
-    ATTRACT,
-
-    /** "Down" points away from the core. */
-    REPEL,
-
-    /** Down stays as it is, but gravity is weakened inside the field. */
-    LEVITATE;
-
-    /** The other pulling polarity; levitation has no opposite and stays as it is. */
-    public Polarity flipped() {
-
-        return switch (this) {
-            case ATTRACT -> REPEL;
-            case REPEL -> ATTRACT;
-            case LEVITATE -> LEVITATE;
-        };
-    }
+/**
+ * What a core is asked to do right now, after redstone has had its say.
+ *
+ * @param polarity the pull it should make
+ * @param level how strong, from 0 (nothing) up to the highest level, with fractions
+ */
+public record Control(Polarity polarity, double level) {
 }

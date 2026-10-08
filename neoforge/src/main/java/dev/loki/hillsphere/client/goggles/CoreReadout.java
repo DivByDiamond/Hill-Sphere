@@ -19,8 +19,10 @@
 package dev.loki.hillsphere.client.goggles;
 
 import dev.loki.hillsphere.blockentity.HillCoreBlockEntity;
+import dev.loki.hillsphere.blockentity.setting.CoreSettings;
 import dev.loki.hillsphere.config.HillSphereConfig;
 import dev.loki.hillsphere.field.FieldTuning;
+import dev.loki.hillsphere.field.control.Control;
 import dev.loki.hillsphere.item.HillGogglesItem;
 
 import java.util.List;
@@ -63,23 +65,31 @@ public final class CoreReadout {
 
         final FieldTuning tuning = HillSphereConfig.tuning();
         final double rpm = Math.abs(core.getSpeed());
-        final int level = core.getStrengthLevel();
         return List.of(
                 Component.translatable("hillsphere.readout.state", Component.translatable(status(core, tuning, rpm))),
+                Component.translatable("hillsphere.readout.mode", Component.translatable("hillsphere.core.mode." + core.settings().mode().name().toLowerCase(Locale.ROOT))),
+                Component.translatable("hillsphere.readout.level", format(core.settings().level()), format(asked(core).level())),
                 Component.translatable("hillsphere.readout.speed", format(rpm)),
                 Component.translatable("hillsphere.readout.radius", format(tuning.radius(rpm))),
-                Component.translatable("hillsphere.readout.load", format(tuning.stress(rpm, level))));
+                Component.translatable("hillsphere.readout.load", format(tuning.stress(rpm, core.settings().level()))));
     }
 
     private static String status(HillCoreBlockEntity core, FieldTuning tuning, double rpm) {
 
-        if (core.getLevel().hasNeighborSignal(core.getBlockPos())) {
-            return "hillsphere.readout.redstone";
+        if (asked(core).level() <= 0) {
+            return core.settings().level() == 0 ? "hillsphere.readout.zero" : "hillsphere.readout.redstone";
         }
         if (core.isOverStressed()) {
             return "hillsphere.readout.overstressed";
         }
         return tuning.isSpinningFastEnough(rpm) ? "hillsphere.readout.working" : "hillsphere.readout.slow";
+    }
+
+    /** What the panel and the redstone around the core ask of it; worked out here because only the server ticks it. */
+    private static Control asked(HillCoreBlockEntity core) {
+
+        final CoreSettings settings = core.settings();
+        return settings.mode().apply(settings.polarity(), settings.level(), core.getLevel().getBestNeighborSignal(core.getBlockPos()));
     }
 
     private static String format(double value) {

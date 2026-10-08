@@ -23,13 +23,11 @@ import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour
 import dev.loki.hillsphere.block.FieldState;
 import dev.loki.hillsphere.block.HillCoreBlock;
 import dev.loki.hillsphere.blockentity.setting.CoreSettingSlot;
-import dev.loki.hillsphere.blockentity.setting.PolarityBehaviour;
-import dev.loki.hillsphere.blockentity.setting.PolarityOption;
-import dev.loki.hillsphere.blockentity.setting.StepSettingBehaviour;
+import dev.loki.hillsphere.blockentity.setting.CoreSettings;
 import dev.loki.hillsphere.config.HillSphereConfig;
 import dev.loki.hillsphere.field.CoreDriver;
-import dev.loki.hillsphere.field.FieldTuning;
 import dev.loki.hillsphere.field.Polarity;
+import dev.loki.hillsphere.field.control.Control;
 import dev.loki.hillsphere.field.math.Vec3d;
 import dev.loki.hillsphere.registry.ModBlockEntities;
 import dev.loki.hillsphere.world.WorldFields;
@@ -37,6 +35,7 @@ import dev.loki.hillsphere.world.WorldFields;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -44,8 +43,8 @@ import net.minecraft.world.level.block.state.BlockState;
 public class HillCoreBlockEntity extends KineticBlockEntity {
 
     private final CoreDriver driver = new CoreDriver();
-    private PolarityBehaviour polarity;
-    private StepSettingBehaviour strengthLevel;
+    private CoreSettings settings;
+    private Control control = new Control(Polarity.ATTRACT, 0);
 
     public HillCoreBlockEntity(BlockPos pos, BlockState state) {
 
@@ -56,18 +55,15 @@ public class HillCoreBlockEntity extends KineticBlockEntity {
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
 
         super.addBehaviours(behaviours);
-        polarity = new PolarityBehaviour(Component.translatable("hillsphere.core.polarity"), this,
-                new CoreSettingSlot(true));
-        strengthLevel = new StepSettingBehaviour(Component.translatable("hillsphere.core.level"), this,
-                new CoreSettingSlot(false), HillCoreBlock.MAX_LEVEL);
-        behaviours.add(polarity);
-        behaviours.add(strengthLevel);
+        settings = new CoreSettings(Component.translatable("hillsphere.core.settings"), this, new CoreSettingSlot());
+        behaviours.add(settings);
     }
 
+    /** The load follows the level on the panel, the most the core can be asked for, so redstone cannot overstress the network. */
     @Override
     public float calculateStressApplied() {
 
-        final int level = strengthLevel == null ? 1 : strengthLevel.getValue();
+        final int level = settings == null ? 0 : settings.level();
         lastStressApplied = (float) (HillSphereConfig.tuning().stressPerRpmPerLevel() * level);
         return lastStressApplied;
     }
@@ -79,11 +75,12 @@ public class HillCoreBlockEntity extends KineticBlockEntity {
         if (level == null || level.isClientSide) {
             return;
         }
-        final boolean enabled = !level.hasNeighborSignal(worldPosition) && !isOverStressed();
-        final FieldTuning tuning = HillSphereConfig.tuning();
+        final int signal = level.getBestNeighborSignal(worldPosition);
+        control = settings.mode().apply(settings.polarity(), settings.level(), signal);
         final BlockPos p = worldPosition;
-        WorldFields.of(level).update(p, driver.step(tuning, new Vec3d(p.getX() + 0.5, p.getY() + 0.5, p.getZ() + 0.5),
-                polarityValue(), strengthLevel.getValue(), Math.abs(getSpeed()), enabled));
+        WorldFields.of(level).update(p, driver.step(HillSphereConfig.tuning(),
+                new Vec3d(p.getX() + 0.5, p.getY() + 0.5, p.getZ() + 0.5), control.polarity(), control.level(),
+                Math.abs(getSpeed()), !isOverStressed()));
         showState();
     }
 
@@ -96,31 +93,25 @@ public class HillCoreBlockEntity extends KineticBlockEntity {
         super.remove();
     }
 
-    public Polarity polarityValue() {
+    public CoreSettings settings() {
 
-        return polarity.get().polarity();
+        return settings;
     }
 
-    public int getStrengthLevel() {
+    /** What redstone and the panel ask of the core right now; updated every server tick. */
+    public Control control() {
 
-        return strengthLevel.getValue();
-    }
-
-    /** Sets both settings at once, as a player would with the two panels. */
-    public void configure(Polarity newPolarity, int level) {
-
-        polarity.setValue(PolarityOption.valueOf(newPolarity.name()).ordinal());
-        strengthLevel.setValue(level);
+        return control;
     }
 
     /** Mirrors the field into the block state, which drives the model. */
     private void showState() {
 
-        final FieldState shown = driver.isActive() ? FieldState.of(polarityValue()) : FieldState.OFF;
+        final FieldState shown = driver.isActive() ? FieldState.of(control.polarity()) : FieldState.OFF;
+        final int pips = Mth.clamp((int) Math.round(control.level()), 0, HillCoreBlock.MAX_LEVEL);
         final BlockState state = getBlockState();
-        if (state.getValue(HillCoreBlock.FIELD) != shown || state.getValue(HillCoreBlock.LEVEL) != strengthLevel.getValue()) {
-            level.setBlock(worldPosition,
-                    state.setValue(HillCoreBlock.FIELD, shown).setValue(HillCoreBlock.LEVEL, strengthLevel.getValue()),
+        if (state.getValue(HillCoreBlock.FIELD) != shown || state.getValue(HillCoreBlock.LEVEL) != pips) {
+            level.setBlock(worldPosition, state.setValue(HillCoreBlock.FIELD, shown).setValue(HillCoreBlock.LEVEL, pips),
                     Block.UPDATE_CLIENTS);
         }
     }

@@ -39,7 +39,7 @@ public final class CoreDriver {
      * @param enabled false when something (redstone, overstress) switches the core off
      * @return the core as the resolver should see it now
      */
-    public CoreField step(FieldTuning tuning, Vec3d center, Polarity polarity, int level, double rpm, boolean enabled) {
+    public CoreField step(FieldTuning tuning, Vec3d center, Polarity polarity, double level, double rpm, boolean enabled) {
 
         final boolean on = enabled && tuning.isSpinningFastEnough(rpm);
         final double targetRadius = on ? tuning.radius(rpm) : 0;
@@ -55,7 +55,7 @@ public final class CoreDriver {
         return radius > 0 && strength > 0;
     }
 
-    private static double power(FieldTuning tuning, Polarity polarity, int level) {
+    private static double power(FieldTuning tuning, Polarity polarity, double level) {
 
         return polarity == Polarity.LEVITATE ? tuning.levitation(level) : tuning.strength(level);
     }
