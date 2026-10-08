@@ -16,27 +16,20 @@
  * You should have received a copy of the GNU General Public License
  * along with Hill Sphere. If not, see <https://www.gnu.org/licenses/>.
  */
-package dev.loki.hillsphere.item;
+package dev.loki.hillsphere.client.goggles.model;
 
-import net.minecraft.world.item.ArmorItem;
+import net.minecraft.client.model.HumanoidModel;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.ItemAttributeModifiers;
+import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 
-/**
- * Goggles that show gravity fields while worn. A helmet so the game draws them on the head; they give no
- * armor and never wear out (no durability is set, so the stack cannot be damaged).
- */
-public class HillGogglesItem extends ArmorItem {
+/** Swaps the plain helmet box for the goggles model; the game copies the head pose onto it. */
+public final class GogglesExtensions implements IClientItemExtensions {
 
-    public HillGogglesItem(Properties properties) {
-
-        super(GogglesArmor.MATERIAL, Type.HELMET, properties.stacksTo(1));
-    }
-
-    /** No "+0 Armor" line in the tooltip. */
     @Override
-    public ItemAttributeModifiers getDefaultAttributeModifiers(ItemStack stack) {
+    public HumanoidModel<?> getHumanoidArmorModel(LivingEntity entity, ItemStack stack, EquipmentSlot slot, HumanoidModel<?> original) {
 
-        return ItemAttributeModifiers.EMPTY;
+        return slot == EquipmentSlot.HEAD ? GogglesModel.get() : original;
     }
 }
