@@ -24,5 +24,15 @@
   "hillsphere.readout.working": "working",
   "hillsphere.readout.slow": "too slow, no field",
   "hillsphere.readout.redstone": "off by redstone",
-  "hillsphere.readout.overstressed": "overstressed"
+  "hillsphere.readout.overstressed": "overstressed",
+  "hillsphere.core.settings": "Hill core",
+  "hillsphere.core.mode": "Redstone",
+  "hillsphere.core.mode.manual": "Manual",
+  "hillsphere.core.mode.off_on_signal": "Off on signal",
+  "hillsphere.core.mode.on_with_signal": "On with signal",
+  "hillsphere.core.mode.analog": "Analog",
+  "hillsphere.core.mode.reverse_on_signal": "Reverse on signal",
+  "hillsphere.readout.mode": "Redstone: %s",
+  "hillsphere.readout.level": "Level: %s (now %s)",
+  "hillsphere.readout.zero": "level 0"
 }

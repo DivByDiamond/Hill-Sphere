@@ -25,9 +25,9 @@ import dev.loki.hillsphere.Constants;
 import dev.loki.hillsphere.block.FieldState;
 import dev.loki.hillsphere.block.HillCoreBlock;
 import dev.loki.hillsphere.blockentity.HillCoreBlockEntity;
-import dev.loki.hillsphere.blockentity.setting.PolarityBehaviour;
-import dev.loki.hillsphere.blockentity.setting.StepSettingBehaviour;
+import dev.loki.hillsphere.blockentity.setting.CoreSettings;
 import dev.loki.hillsphere.field.Polarity;
+import dev.loki.hillsphere.field.control.RedstoneMode;
 import dev.loki.hillsphere.field.math.Vec3d;
 import dev.loki.hillsphere.registry.ModBlocks;
 import dev.loki.hillsphere.world.WorldFields;
@@ -60,11 +60,16 @@ public final class CoreGameTests {
     /** A motor on the core's shaft, spinning at the given speed; returns the core. */
     static HillCoreBlockEntity powered(GameTestHelper helper, int rpm, Polarity polarity, int level) {
 
+        return powered(helper, rpm, polarity, level, RedstoneMode.OFF_ON_SIGNAL);
+    }
+
+    static HillCoreBlockEntity powered(GameTestHelper helper, int rpm, Polarity polarity, int level, RedstoneMode mode) {
+
         helper.setBlock(MOTOR, AllBlocks.CREATIVE_MOTOR.getDefaultState().setValue(CreativeMotorBlock.FACING, Direction.EAST));
         helper.setBlock(CORE, ModBlocks.HILL_CORE.get().defaultBlockState().setValue(HillCoreBlock.AXIS, Axis.X));
         ((CreativeMotorBlockEntity) helper.getBlockEntity(MOTOR)).generatedSpeed.setValue(rpm);
         final HillCoreBlockEntity core = (HillCoreBlockEntity) helper.getBlockEntity(CORE);
-        core.configure(polarity, level);
+        core.settings().configure(polarity, level, mode);
         return core;
     }
 
@@ -92,27 +97,32 @@ public final class CoreGameTests {
         });
     }
 
+    private static boolean isSet(HillCoreBlockEntity core) {
+
+        final CoreSettings settings = core.settings();
+        return settings.polarity() == Polarity.REPEL && settings.level() == 5 && settings.mode() == RedstoneMode.ANALOG;
+    }
+
     @GameTest(template = EMPTY, batch = "settingsAreIndependentAndSurviveSaving")
     public static void settingsAreIndependentAndSurviveSaving(GameTestHelper helper) {
 
-        final HillCoreBlockEntity core = powered(helper, 16, Polarity.REPEL, 4);
-        helper.assertTrue(core.getBehaviour(PolarityBehaviour.TYPE) != null, "polarity setting must be registered");
-        helper.assertTrue(core.getBehaviour(StepSettingBehaviour.TYPE) != null, "level setting must be registered");
-        helper.assertTrue(core.polarityValue() == Polarity.REPEL && core.getStrengthLevel() == 4, "settings must not overwrite each other");
+        final HillCoreBlockEntity core = powered(helper, 16, Polarity.REPEL, 5, RedstoneMode.ANALOG);
+        helper.assertTrue(core.getBehaviour(CoreSettings.TYPE) != null, "the settings must be registered");
+        helper.assertTrue(isSet(core), "the three settings must not overwrite each other");
 
         final CompoundTag saved = core.saveWithFullMetadata(helper.getLevel().registryAccess());
         final BlockEntity loaded = BlockEntity.loadStatic(helper.absolutePos(CORE), helper.getBlockState(CORE), saved,
                 helper.getLevel().registryAccess());
         helper.assertTrue(loaded instanceof HillCoreBlockEntity, "the saved core should load back");
         final HillCoreBlockEntity back = (HillCoreBlockEntity) loaded;
-        helper.assertTrue(back.polarityValue() == Polarity.REPEL && back.getStrengthLevel() == 4, "settings must survive saving");
+        helper.assertTrue(isSet(back), "settings must survive saving");
         helper.succeed();
     }
 
     @GameTest(template = EMPTY, timeoutTicks = 400, batch = "levitationHoldsAnItemUp")
     public static void levitationHoldsAnItemUp(GameTestHelper helper) {
 
-        powered(helper, 128, Polarity.LEVITATE, 3);
+        powered(helper, 128, Polarity.LEVITATE, 4);
         final Vec3 start = new Vec3(2.5, 4.0, 3.5);
         helper.runAfterDelay(100, () -> {
             final ItemEntity item = helper.spawnItem(Items.COBBLESTONE, start);
@@ -145,7 +155,7 @@ public final class CoreGameTests {
         helper.setBlock(MOTOR.above(), AllBlocks.CREATIVE_MOTOR.getDefaultState().setValue(CreativeMotorBlock.FACING, Direction.EAST));
         helper.setBlock(CORE.above(), ModBlocks.HILL_CORE.get().defaultBlockState().setValue(HillCoreBlock.AXIS, Axis.X));
         ((CreativeMotorBlockEntity) helper.getBlockEntity(MOTOR.above())).generatedSpeed.setValue(128);
-        ((HillCoreBlockEntity) helper.getBlockEntity(CORE.above())).configure(polarity, 3);
+        ((HillCoreBlockEntity) helper.getBlockEntity(CORE.above())).settings().configure(polarity, 3, RedstoneMode.MANUAL);
     }
 
     private static void raise(GameTestHelper helper, Polarity polarity, double itemY, String why) {

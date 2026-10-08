@@ -51,7 +51,7 @@ class CoreDriverTest {
     void growsToTheTargetInRampTicks() {
 
         final CoreDriver d = new CoreDriver();
-        final CoreField f = run(d, T.rampTicks() + 1, Polarity.ATTRACT, 3, 256, true);
+        final CoreField f = run(d, T.rampTicks() + 1, Polarity.ATTRACT, 4, 256, true);
         assertEquals(32, f.radius(), 1e-9);
         assertEquals(1.0, f.strength(), 1e-9);
         assertTrue(d.isActive());
@@ -85,7 +85,7 @@ class CoreDriverTest {
     @Test
     void levitationUsesItsOwnLevels() {
 
-        final CoreField f = run(new CoreDriver(), 100, Polarity.LEVITATE, 4, 128, true);
+        final CoreField f = run(new CoreDriver(), 100, Polarity.LEVITATE, 5, 128, true);
         assertEquals(1.25, f.strength(), 1e-9);
         assertEquals(Polarity.LEVITATE, f.polarity());
     }

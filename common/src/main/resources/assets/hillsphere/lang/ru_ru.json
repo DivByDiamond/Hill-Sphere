@@ -24,5 +24,15 @@
   "hillsphere.readout.working": "работает",
   "hillsphere.readout.slow": "слишком медленно, поля нет",
   "hillsphere.readout.redstone": "выключено редстоуном",
-  "hillsphere.readout.overstressed": "перегрузка"
+  "hillsphere.readout.overstressed": "перегрузка",
+  "hillsphere.core.settings": "Ядро Хилла",
+  "hillsphere.core.mode": "Редстоун",
+  "hillsphere.core.mode.manual": "Ручной",
+  "hillsphere.core.mode.off_on_signal": "Выкл. по сигналу",
+  "hillsphere.core.mode.on_with_signal": "Вкл. по сигналу",
+  "hillsphere.core.mode.analog": "Аналоговый",
+  "hillsphere.core.mode.reverse_on_signal": "Реверс по сигналу",
+  "hillsphere.readout.mode": "Редстоун: %s",
+  "hillsphere.readout.level": "Уровень: %s (сейчас %s)",
+  "hillsphere.readout.zero": "уровень 0"
 }

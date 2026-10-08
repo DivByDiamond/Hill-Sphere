@@ -28,5 +28,15 @@ public enum Polarity {
     REPEL,
 
     /** Down stays as it is, but gravity is weakened inside the field. */
-    LEVITATE
+    LEVITATE;
+
+    /** The other pulling polarity; levitation has no opposite and stays as it is. */
+    public Polarity flipped() {
+
+        return switch (this) {
+            case ATTRACT -> REPEL;
+            case REPEL -> ATTRACT;
+            case LEVITATE -> LEVITATE;
+        };
+    }
 }
