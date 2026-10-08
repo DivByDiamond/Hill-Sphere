@@ -18,32 +18,25 @@
  */
 package dev.loki.hillsphere.item;
 
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Equipable;
-import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
 
-/** Goggles that show gravity fields while worn on the head. */
-public class HillGogglesItem extends Item implements Equipable {
+/**
+ * Goggles that show gravity fields while worn. A helmet so the game draws them on the head; they give no
+ * armor and never wear out (no durability is set, so the stack cannot be damaged).
+ */
+public class HillGogglesItem extends ArmorItem {
 
     public HillGogglesItem(Properties properties) {
 
-        super(properties.stacksTo(1));
+        super(GogglesArmor.MATERIAL, Type.HELMET, properties.stacksTo(1));
     }
 
+    /** No "+0 Armor" line in the tooltip. */
     @Override
-    public EquipmentSlot getEquipmentSlot() {
+    public ItemAttributeModifiers getDefaultAttributeModifiers(ItemStack stack) {
 
-        return EquipmentSlot.HEAD;
-    }
-
-    @Override
-    public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
-
-        return swapWithEquipmentSlot(this, level, player, hand);
+        return ItemAttributeModifiers.EMPTY;
     }
 }

@@ -19,6 +19,7 @@
 package dev.loki.hillsphere.registry;
 
 import dev.loki.hillsphere.Constants;
+import dev.loki.hillsphere.item.GogglesArmor;
 import dev.loki.hillsphere.item.HillGogglesItem;
 
 import net.minecraft.world.item.BlockItem;
@@ -52,6 +53,7 @@ public final class ModItems {
 
     public static void register(IEventBus bus) {
 
+        GogglesArmor.register(bus);
         ITEMS.register(bus);
         bus.addListener(ModItems::fillTabs);
     }

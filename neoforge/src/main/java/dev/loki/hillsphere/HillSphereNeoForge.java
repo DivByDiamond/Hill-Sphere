@@ -20,6 +20,7 @@ package dev.loki.hillsphere;
 
 import dev.loki.hillsphere.client.ClientInit;
 import dev.loki.hillsphere.command.HillSphereCommand;
+import dev.loki.hillsphere.config.GogglesConfig;
 import dev.loki.hillsphere.config.HillSphereConfig;
 import dev.loki.hillsphere.network.FieldNetwork;
 import dev.loki.hillsphere.registry.ModBlockEntities;
@@ -44,6 +45,7 @@ public class HillSphereNeoForge {
     public HillSphereNeoForge(IEventBus modBus, ModContainer container) {
 
         container.registerConfig(ModConfig.Type.SERVER, HillSphereConfig.SPEC);
+        container.registerConfig(ModConfig.Type.CLIENT, GogglesConfig.SPEC);
         modBus.addListener(ModConfigEvent.Loading.class, HillSphereConfig::onConfig);
         modBus.addListener(ModConfigEvent.Reloading.class, HillSphereConfig::onConfig);
         ModBlocks.register(modBus);
