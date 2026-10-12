@@ -20,7 +20,6 @@ package dev.loki.hillsphere.mixin.client;
 
 import dev.loki.hillsphere.entity.LivingGravity;
 import dev.loki.hillsphere.field.frame.GravityFrame;
-import dev.loki.hillsphere.field.math.Vec3d;
 
 import org.apache.commons.lang3.tuple.Pair;
 import net.minecraft.client.renderer.ScreenEffectRenderer;
@@ -37,8 +36,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  * The "inside a block" screen overlay probes eight points around the player's x and z and the eye's y,
  * all against world axes: on a wall the feet's coordinate along the wall's normal lies on the face of the
  * block below, so the probe lands in the wall and the screen goes dark with planks. In a turned frame the
- * probe is taken around the real eye instead: the feet plus the eye height along the frame's "up", since
- * {@code getEyePosition} itself still adds the eye height along world Y and so lands in the wall or ceiling.
+ * probe is taken around the real eye instead: the feet plus the eye height along the frame's "up".
  */
 @Mixin(ScreenEffectRenderer.class)
 public abstract class FrameOverlayMixin {
@@ -53,8 +51,7 @@ public abstract class FrameOverlayMixin {
         if (frame.isVanilla()) {
             return;
         }
-        final Vec3d up = frame.toReal(new Vec3d(0, player.getEyeHeight(), 0));
-        final Vec3 eye = player.position().add(up.x(), up.y(), up.z());
+        final Vec3 eye = player.getEyePosition();
         Pair<BlockState, BlockPos> found = null;
         for (int i = 0; i < 8 && found == null; i++) {
             final BlockPos pos = BlockPos.containing(eye.x + ((i & 1) - 0.5) * SPAN, eye.y + (((i >> 1) & 1) - 0.5) * SPAN,

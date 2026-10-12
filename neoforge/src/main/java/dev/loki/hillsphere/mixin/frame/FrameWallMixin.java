@@ -19,6 +19,7 @@
 package dev.loki.hillsphere.mixin.frame;
 
 import dev.loki.hillsphere.entity.FrameState;
+import dev.loki.hillsphere.entity.LivingGravity;
 import dev.loki.hillsphere.field.frame.GravityFrame;
 import dev.loki.hillsphere.field.math.Vec3d;
 
@@ -58,12 +59,24 @@ public abstract class FrameWallMixin {
             return;
         }
         final Entity self = (Entity) (Object) this;
-        final Vec3d up = hillsphereUp(frame);
-        final double height = self.getEyeHeight();
-        final double x = Mth.lerp(partialTick, self.xo, self.getX());
-        final double y = Mth.lerp(partialTick, self.yo, self.getY());
-        final double z = Mth.lerp(partialTick, self.zo, self.getZ());
-        cir.setReturnValue(new Vec3(x + up.x() * height, y + up.y() * height, z + up.z() * height));
+        final Vec3 feet = new Vec3(Mth.lerp(partialTick, self.xo, self.getX()), Mth.lerp(partialTick, self.yo, self.getY()),
+                Mth.lerp(partialTick, self.zo, self.getZ()));
+        cir.setReturnValue(LivingGravity.above(frame, feet, self.getEyeHeight()));
+    }
+
+    /**
+     * The eye of this tick. Vanilla builds it from the feet's x and z and only the eye's y, so on a wall it sat on
+     * the face under the feet: suffocation, reach, buckets and line of sight all measured from the wall.
+     */
+    @Inject(method = "getEyePosition()Lnet/minecraft/world/phys/Vec3;", at = @At("HEAD"), cancellable = true)
+    private void hillsphereFrameEyeNow(CallbackInfoReturnable<Vec3> cir) {
+
+        final GravityFrame frame = frame();
+        if (frame == null || frame.isVanilla()) {
+            return;
+        }
+        final Entity self = (Entity) (Object) this;
+        cir.setReturnValue(LivingGravity.above(frame, self.position(), self.getEyeHeight()));
     }
 
     /** The look vector is built around world "up"; in a turned frame the same angles mean the frame's axes. */

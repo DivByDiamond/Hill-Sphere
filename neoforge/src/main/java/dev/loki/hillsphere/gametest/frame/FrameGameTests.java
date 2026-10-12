@@ -24,10 +24,12 @@ import com.simibubi.create.content.kinetics.motor.CreativeMotorBlockEntity;
 import dev.loki.hillsphere.Constants;
 import dev.loki.hillsphere.block.HillCoreBlock;
 import dev.loki.hillsphere.blockentity.HillCoreBlockEntity;
+import dev.loki.hillsphere.entity.FrameState;
 import dev.loki.hillsphere.entity.LivingGravity;
 import dev.loki.hillsphere.field.Polarity;
 import dev.loki.hillsphere.field.control.RedstoneMode;
 import dev.loki.hillsphere.gametest.CoreGameTests;
+import dev.loki.hillsphere.gametest.cleanup.CoreCleanup;
 import dev.loki.hillsphere.registry.ModBlocks;
 
 import net.minecraft.core.BlockPos;
@@ -91,6 +93,38 @@ public final class FrameGameTests {
         });
     }
 
+    /** A pig on a ceiling jumps a block and more away from it, whatever the pull; the hop scales with it. */
+    @GameTest(template = EMPTY, timeoutTicks = 400, batch = "aPigJumpsOffTheCeiling")
+    public static void aPigJumpsOffTheCeiling(GameTestHelper helper) {
+
+        CoreGameTests.liftCore(helper, Polarity.ATTRACT);
+        helper.runAfterDelay(100, () -> {
+            final Mob pig = helper.spawnWithNoFreeWill(EntityType.PIG, new Vec3(2.5, 1.0, 3.5));
+            helper.runAfterDelay(80, () -> {
+                helper.assertTrue(!LivingGravity.frameOf(pig).isVanilla() && pig.onGround(), "the pig should stand on the core");
+                final double rest = pig.getY();
+                final double[] lowest = {rest};
+                pig.getJumpControl().jump();
+                watch(pig, lowest, 20, helper);
+                helper.runAfterDelay(25, () -> {
+                    final String what = "hop " + (rest - lowest[0]) + " at pull " + ((FrameState) pig).hillsphereStrength();
+                    helper.assertTrue(rest - lowest[0] > 0.9, "the pig should hop clear of a block, " + what);
+                    helper.assertTrue(pig.onGround() && Math.abs(pig.getY() - rest) < 0.01, "and land back on the core, " + what);
+                    helper.succeed();
+                });
+            });
+        });
+    }
+
+    /** Keeps the lowest point (the farthest from the ceiling) of the pig over the next few ticks. */
+    private static void watch(Mob pig, double[] lowest, int left, GameTestHelper helper) {
+
+        lowest[0] = Math.min(lowest[0], pig.getY());
+        if (left > 0) {
+            helper.runAfterDelay(1, () -> watch(pig, lowest, left - 1, helper));
+        }
+    }
+
     /** A slab under a ceiling is a step along the frame's "up"; without it the pig could never get past. */
     @GameTest(template = EMPTY, timeoutTicks = 400, batch = "aPigStepsOverASlabOnTheCeiling")
     public static void aPigStepsOverASlabOnTheCeiling(GameTestHelper helper) {
@@ -124,6 +158,7 @@ public final class FrameGameTests {
         final BlockPos core = new BlockPos(2, 0, 3);
         helper.setBlock(motor, AllBlocks.CREATIVE_MOTOR.getDefaultState().setValue(CreativeMotorBlock.FACING, Direction.EAST));
         helper.setBlock(core, ModBlocks.HILL_CORE.get().defaultBlockState().setValue(HillCoreBlock.AXIS, Axis.X));
+        CoreCleanup.removeWhenDone(helper, core);
         ((CreativeMotorBlockEntity) helper.getBlockEntity(motor)).generatedSpeed.setValue(128);
         ((HillCoreBlockEntity) helper.getBlockEntity(core)).settings().configure(Polarity.REPEL, 3, RedstoneMode.MANUAL);
     }

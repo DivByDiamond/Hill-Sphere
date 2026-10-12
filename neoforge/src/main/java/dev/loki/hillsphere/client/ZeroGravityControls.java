@@ -18,13 +18,18 @@
  */
 package dev.loki.hillsphere.client;
 
+import dev.loki.hillsphere.entity.LivingGravity;
 import dev.loki.hillsphere.world.FieldLookup;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 
-/** In a levitation field the jump key pushes you up and the sneak key down, like swimming. */
+/**
+ * In a levitation field the jump key pushes you up and the sneak key down, like swimming; "up" is the frame's,
+ * so on a ceiling the jump key pushes away from it rather than into it.
+ */
 final class ZeroGravityControls {
 
     /** Lift above which gravity is weak enough that the player steers by thrust. */
@@ -45,7 +50,8 @@ final class ZeroGravityControls {
         }
         final int direction = (mc.options.keyJump.isDown() ? 1 : 0) - (mc.options.keyShift.isDown() ? 1 : 0);
         if (direction != 0 && FieldLookup.liftAt(player) >= WEIGHTLESS) {
-            player.setDeltaMovement(player.getDeltaMovement().add(0, direction * THRUST, 0));
+            player.setDeltaMovement(player.getDeltaMovement().add(
+                    LivingGravity.above(LivingGravity.frameOf(player), Vec3.ZERO, direction * THRUST)));
         }
     }
 }
