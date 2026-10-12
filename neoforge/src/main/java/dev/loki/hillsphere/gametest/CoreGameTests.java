@@ -150,7 +150,7 @@ public final class CoreGameTests {
     }
 
     /** The core sits at y 3 here, so something below it is on the far side from vanilla's point of view. */
-    static void liftCore(GameTestHelper helper, Polarity polarity) {
+    public static void liftCore(GameTestHelper helper, Polarity polarity) {
 
         helper.setBlock(MOTOR.above(), AllBlocks.CREATIVE_MOTOR.getDefaultState().setValue(CreativeMotorBlock.FACING, Direction.EAST));
         helper.setBlock(CORE.above(), ModBlocks.HILL_CORE.get().defaultBlockState().setValue(HillCoreBlock.AXIS, Axis.X));

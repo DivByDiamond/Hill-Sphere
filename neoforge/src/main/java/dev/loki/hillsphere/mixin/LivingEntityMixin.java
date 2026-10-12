@@ -18,6 +18,7 @@
  */
 package dev.loki.hillsphere.mixin;
 
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import dev.loki.hillsphere.entity.FrameState;
 import dev.loki.hillsphere.field.frame.GravityFrame;
 import dev.loki.hillsphere.field.math.Vec3d;
@@ -61,6 +62,21 @@ public abstract class LivingEntityMixin {
     private void hillsphereLeaveOnJump(CallbackInfo ci) {
 
         leave();
+    }
+
+    /**
+     * A pull of twice the vanilla gravity must not halve the hop. Height goes as power over
+     * gravity, so power scales with the square root of the pull: at twice the pull the jump
+     * still clears a block, at a quarter of it it is a moon jump.
+     */
+    @ModifyReturnValue(method = "getJumpPower()F", at = @At("RETURN"))
+    private float hillsphereJumpPower(float original) {
+
+        final double strength = ((FrameState) this).hillsphereStrength();
+        if (strength <= 0.0 || strength == 1.0) {
+            return original;
+        }
+        return (float) (original * Math.sqrt(strength));
     }
 
     /** Velocity becomes virtual: what vanilla thinks of as straight down is where the field pulls. */

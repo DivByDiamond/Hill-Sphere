@@ -7,9 +7,19 @@
     "EntityFrameMixin",
     "EntityMixin",
     "LivingEntityMixin",
-    "ServerPacketMixin"
+    "PlayerFrameMixin",
+    "ServerPacketMixin",
+    "frame.FrameFootMixin",
+    "frame.FrameStepMixin",
+    "frame.FrameUseContextMixin",
+    "frame.FrameWallMixin"
   ],
-  "client": [],
+  "client": [
+    "client.FrameCameraMixin",
+    "client.FrameOverlayMixin",
+    "client.LocalPlayerMixin",
+    "frame.FramePoseMixin"
+  ],
   "server": [],
   "injectors": {
     "defaultRequire": 1
