@@ -24,6 +24,7 @@ import dev.loki.hillsphere.entity.LivingGravity;
 import dev.loki.hillsphere.field.frame.GravityFrame;
 import dev.loki.hillsphere.field.math.Vec3d;
 import dev.loki.hillsphere.field.resolve.Gravity;
+import dev.loki.hillsphere.field.resolve.PullSmoother;
 import dev.loki.hillsphere.world.FieldLookup;
 
 import net.minecraft.world.entity.Entity;
@@ -53,6 +54,7 @@ public abstract class EntityFrameMixin implements FrameState {
     @Unique private GravityFrame hillsphereFrame = GravityFrame.DOWN;
     @Unique private double hillsphereStrength = 1;
     @Unique private final FrameSwitch hillsphereSwitch = new FrameSwitch();
+    @Unique private final PullSmoother hillspherePull = new PullSmoother();
     @Unique private boolean hillsphereInside;
     @Unique private Vec3 hillsphereFrom = Vec3.ZERO;
     @Unique private Vec3 hillsphereAsked = Vec3.ZERO;
@@ -82,7 +84,7 @@ public abstract class EntityFrameMixin implements FrameState {
     public void hillsphereRefresh() {
 
         final Entity self = (Entity) (Object) this;
-        final Gravity planet = FieldLookup.planetAt(self);
+        final Gravity planet = hillspherePull.next(FieldLookup.planetAt(self));
         hillsphereStrength = Gravity.VANILLA.equals(planet) ? 1 : planet.strength();
         final GravityFrame next = hillsphereSwitch.next(self, hillsphereFrame, planet);
         if (next != hillsphereFrame && hillsphereSwitch.turn(self, hillsphereFrame, next)) {
