@@ -45,6 +45,19 @@ public final class LivingGravity {
         return entity instanceof LivingEntity && entity instanceof FrameState state ? state.hillsphereStrength() : 1;
     }
 
+    /** A vector of the virtual frame, as it points in the real world. */
+    public static Vec3 toReal(GravityFrame frame, Vec3 v) {
+
+        final Vec3d r = frame.toReal(new Vec3d(v.x, v.y, v.z));
+        return new Vec3(r.x(), r.y(), r.z());
+    }
+
+    /** The point the given distance above the feet along the frame's "up": the eye, or just below it. */
+    public static Vec3 above(GravityFrame frame, Vec3 feet, double height) {
+
+        return feet.add(toReal(frame, new Vec3(0, height, 0)));
+    }
+
     /** The entity's box turned into the frame; its position is the middle of the face it stands on. */
     public static AABB box(GravityFrame frame, Vec3 feet, EntityDimensions size) {
 

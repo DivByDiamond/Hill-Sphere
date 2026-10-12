@@ -9,10 +9,16 @@
     "LivingEntityMixin",
     "PlayerFrameMixin",
     "ServerPacketMixin",
+    "eye.FrameFacingMixin",
+    "eye.FrameFluidEyeMixin",
+    "eye.FrameSightMixin",
     "frame.FrameFootMixin",
     "frame.FrameStepMixin",
     "frame.FrameUseContextMixin",
-    "frame.FrameWallMixin"
+    "frame.FrameWallMixin",
+    "shot.FrameDropMixin",
+    "shot.FrameMuzzleMixin",
+    "shot.FrameShotMixin"
   ],
   "client": [
     "client.FrameCameraMixin",

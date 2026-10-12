@@ -65,9 +65,9 @@ public abstract class LivingEntityMixin {
     }
 
     /**
-     * A pull of twice the vanilla gravity must not halve the hop. Height goes as power over
-     * gravity, so power scales with the square root of the pull: at twice the pull the jump
-     * still clears a block, at a quarter of it it is a moon jump.
+     * A pull of twice the vanilla gravity must not halve the hop. Height goes as the square of the
+     * power over gravity, so power scales with the square root of the pull: the hop clears a block
+     * at any pull, only the time in the air changes (shorter in a strong pull, longer in a weak one).
      */
     @ModifyReturnValue(method = "getJumpPower()F", at = @At("RETURN"))
     private float hillsphereJumpPower(float original) {

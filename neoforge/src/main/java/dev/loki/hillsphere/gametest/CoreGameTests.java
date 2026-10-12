@@ -29,6 +29,7 @@ import dev.loki.hillsphere.blockentity.setting.CoreSettings;
 import dev.loki.hillsphere.field.Polarity;
 import dev.loki.hillsphere.field.control.RedstoneMode;
 import dev.loki.hillsphere.field.math.Vec3d;
+import dev.loki.hillsphere.gametest.cleanup.CoreCleanup;
 import dev.loki.hillsphere.registry.ModBlocks;
 import dev.loki.hillsphere.world.WorldFields;
 
@@ -67,6 +68,7 @@ public final class CoreGameTests {
 
         helper.setBlock(MOTOR, AllBlocks.CREATIVE_MOTOR.getDefaultState().setValue(CreativeMotorBlock.FACING, Direction.EAST));
         helper.setBlock(CORE, ModBlocks.HILL_CORE.get().defaultBlockState().setValue(HillCoreBlock.AXIS, Axis.X));
+        CoreCleanup.removeWhenDone(helper, CORE);
         ((CreativeMotorBlockEntity) helper.getBlockEntity(MOTOR)).generatedSpeed.setValue(rpm);
         final HillCoreBlockEntity core = (HillCoreBlockEntity) helper.getBlockEntity(CORE);
         core.settings().configure(polarity, level, mode);
@@ -154,6 +156,7 @@ public final class CoreGameTests {
 
         helper.setBlock(MOTOR.above(), AllBlocks.CREATIVE_MOTOR.getDefaultState().setValue(CreativeMotorBlock.FACING, Direction.EAST));
         helper.setBlock(CORE.above(), ModBlocks.HILL_CORE.get().defaultBlockState().setValue(HillCoreBlock.AXIS, Axis.X));
+        CoreCleanup.removeWhenDone(helper, CORE.above());
         ((CreativeMotorBlockEntity) helper.getBlockEntity(MOTOR.above())).generatedSpeed.setValue(128);
         ((HillCoreBlockEntity) helper.getBlockEntity(CORE.above())).settings().configure(polarity, 3, RedstoneMode.MANUAL);
     }
