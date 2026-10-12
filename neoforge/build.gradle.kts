@@ -61,10 +61,7 @@ neoForge {
 repositories {
     maven("https://maven.createmod.net")
     maven("https://maven.ithundxr.dev/snapshots") // Registrate
-    maven("https://maven.ryanhcode.dev/releases") // Sable
-    maven("https://api.modrinth.com/maven") {
-        content { includeGroup("maven.modrinth") }
-    }
+    maven("https://maven.ryanhcode.dev/releases") // Sable, dev runtime for the Create addons in run/mods
 }
 
 val mc = providers.gradleProperty("minecraft_version").get()
@@ -76,11 +73,11 @@ dependencies {
     compileOnly("dev.engine-room.flywheel:flywheel-neoforge-api-$mc:${prop("flywheel_version")}")
     runtimeOnly("dev.engine-room.flywheel:flywheel-neoforge-$mc:${prop("flywheel_version")}")
     implementation("com.tterrag.registrate:Registrate:${prop("registrate_version")}")
-    implementation("dev.ryanhcode.sable:sable-neoforge-$mc:${prop("sable_version")}") {
+    // The Create addons in run/mods need Sable at runtime; hill sphere itself does not touch it.
+    runtimeOnly("dev.ryanhcode.sable:sable-neoforge-$mc:${prop("sable_version")}") {
         exclude(group = "foundry.veil")
         exclude(group = "com.tterrag.registrate")
     }
-    implementation("maven.modrinth:aero_cam_sync:${prop("camera_sync_version")}")
 }
 
 sourceSets["main"].resources.srcDir("src/generated/resources")

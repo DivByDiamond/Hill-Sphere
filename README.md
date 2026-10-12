@@ -13,7 +13,7 @@ Nothing below the "Planned" heading exists in code.
   setting sets the pull, polarity (attract / repel) is switched on the block, redstone turns the field off
 - Goggles that make the fields visible
 - A progression that starts from one ore found in the world
-- Gravity acting on ships through Sable's physics, camera tilt through Aeronautics Camera Sync
+- Gravity acting on ships through Sable's physics
 
 The design is still being worked out. See [docs/CONCEPT.md](docs/CONCEPT.md).
 
@@ -21,7 +21,7 @@ The design is still being worked out. See [docs/CONCEPT.md](docs/CONCEPT.md).
 
 - Java 21, Minecraft 1.21.1
 - NeoForge 21.1.256+
-- Required add-ons (planned): Create 6, Sable, Aeronautics Camera Sync
+- Required add-ons (planned): Create 6, Sable
 
 ## Building
 

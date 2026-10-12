@@ -20,11 +20,11 @@ package dev.loki.hillsphere.blockentity.setting;
 
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BehaviourType;
-import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueBoxTransform;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsBehaviour;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsBoard;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsFormatter;
+import com.simibubi.create.foundation.blockEntity.behaviour.scrollValue.ScrollValueBehaviour;
 import dev.loki.hillsphere.block.HillCoreBlock;
 import dev.loki.hillsphere.field.Polarity;
 import dev.loki.hillsphere.field.control.RedstoneMode;
@@ -35,19 +35,20 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.Vec3;
 
 /**
  * All the settings of a core on one panel: polarity, level and redstone mode, one row each. Create sizes
  * the panel by the largest value, so every option sits {@value SettingRows#STEP} values apart, which makes a wide bar
  * with a notch for each choice; rows with fewer choices stop at their last one.
+ *
+ * <p>It derives from {@link ScrollValueBehaviour} on purpose: Create only draws the settings hint (the outline on
+ * the face and the "click and hold to edit" tip) for behaviours of that class, while the panel itself opens for any
+ * {@link ValueSettingsBehaviour}.
  */
-public class CoreSettings extends BlockEntityBehaviour implements ValueSettingsBehaviour {
+public class CoreSettings extends ScrollValueBehaviour {
 
     public static final BehaviourType<CoreSettings> TYPE = new BehaviourType<>("hillsphere_settings");
 
-    private final Component label;
-    private final ValueBoxTransform slot;
     private Polarity polarity = Polarity.ATTRACT;
     private int level = 1;
     private RedstoneMode mode = RedstoneMode.OFF_ON_SIGNAL;
@@ -55,9 +56,7 @@ public class CoreSettings extends BlockEntityBehaviour implements ValueSettingsB
 
     public CoreSettings(Component label, SmartBlockEntity be, ValueBoxTransform slot) {
 
-        super(be);
-        this.label = label;
-        this.slot = slot;
+        super(label, be, slot);
     }
 
     public Polarity polarity() {
@@ -92,35 +91,17 @@ public class CoreSettings extends BlockEntityBehaviour implements ValueSettingsB
     }
 
     @Override
-    public boolean isSafeNBT() {
-
-        return true;
-    }
-
-    @Override
-    public boolean isActive() {
-
-        return true;
-    }
-
-    @Override
-    public boolean testHit(Vec3 hit) {
-
-        final Vec3 local = hit.subtract(Vec3.atLowerCornerOf(getPos()));
-        return slot.testHit(getWorld(), getPos(), blockEntity.getBlockState(), local);
-    }
-
-    @Override
-    public ValueBoxTransform getSlotPositioning() {
-
-        return slot;
-    }
-
-    @Override
     public ValueSettingsBoard createBoard(Player player, BlockHitResult hitResult) {
 
         return new ValueSettingsBoard(label, HillCoreBlock.MAX_LEVEL * SettingRows.STEP, SettingRows.STEP, SettingRows.labels(),
                 new ValueSettingsFormatter(SettingRows::format));
+    }
+
+    /** The face outline shows the panel level, the one number that says how the core runs. */
+    @Override
+    public String formatValue() {
+
+        return Integer.toString(level);
     }
 
     @Override

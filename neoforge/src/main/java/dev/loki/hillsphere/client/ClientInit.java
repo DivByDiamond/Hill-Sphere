@@ -21,7 +21,6 @@ package dev.loki.hillsphere.client;
 import com.simibubi.create.content.kinetics.base.SingleAxisRotatingVisual;
 import dev.engine_room.flywheel.lib.visualization.SimpleBlockEntityVisualizer;
 import dev.loki.hillsphere.Constants;
-import dev.loki.hillsphere.client.camera.GravityTilt;
 import dev.loki.hillsphere.client.goggles.GogglesClient;
 import dev.loki.hillsphere.registry.ModBlockEntities;
 import dev.loki.hillsphere.world.ClientFields;
@@ -56,7 +55,6 @@ public final class ClientInit {
 
     private static void onClientSetup(FMLClientSetupEvent event) {
 
-        event.enqueueWork(GravityTilt::register);
         event.enqueueWork(() -> SimpleBlockEntityVisualizer.builder(ModBlockEntities.HILL_CORE.get())
                 .factory(SingleAxisRotatingVisual.of(ModPartials.ROTOR))
                 .skipVanillaRender(be -> true)
