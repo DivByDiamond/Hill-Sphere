@@ -46,14 +46,14 @@ public enum RedstoneMode {
      * @param level the level on the panel, 0 to the highest level
      * @param signal the redstone signal at the core, 0 to {@value #MAX_SIGNAL}
      */
-    public Control apply(Polarity polarity, int level, int signal) {
+    public Control apply(Polarity polarity, double level, int signal) {
 
         final boolean powered = signal > 0;
         return switch (this) {
             case MANUAL -> new Control(polarity, level);
             case OFF_ON_SIGNAL -> new Control(polarity, powered ? 0 : level);
             case ON_WITH_SIGNAL -> new Control(polarity, powered ? level : 0);
-            case ANALOG -> new Control(polarity, level * (double) Math.min(signal, MAX_SIGNAL) / MAX_SIGNAL);
+            case ANALOG -> new Control(polarity, level * Math.min(signal, MAX_SIGNAL) / MAX_SIGNAL);
             case REVERSE_ON_SIGNAL -> new Control(powered ? polarity.flipped() : polarity, level);
         };
     }

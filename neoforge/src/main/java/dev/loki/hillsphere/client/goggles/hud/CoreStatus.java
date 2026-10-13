@@ -30,7 +30,7 @@ import dev.loki.hillsphere.field.control.RedstoneMode;
  * Everything the panel shows about one core, read on the client. What the panel and redstone ask of the core
  * is worked out here, because only the server ticks it.
  */
-record CoreStatus(String stateKey, boolean working, Polarity polarity, RedstoneMode mode, int panelLevel, Control asked,
+record CoreStatus(String stateKey, boolean working, Polarity polarity, RedstoneMode mode, double panelLevel, Control asked,
         double rpm, double radius, double stress, FieldTuning tuning) {
 
     static CoreStatus of(HillCoreBlockEntity core) {

@@ -58,6 +58,12 @@ public final class GravityField<K> {
         return index.all();
     }
 
+    /** Every active core with its key, e.g. to find what carries it. */
+    public void forEach(java.util.function.BiConsumer<? super K, ? super CoreField> action) {
+
+        index.forEach(action);
+    }
+
     public int size() {
 
         return index.size();

@@ -108,7 +108,7 @@ final class CorePanel {
             final double lit = Math.max(0, Math.min(1, status.asked().level() - i));
             graphics.fill(cx, y + 2, cx + (int) Math.round(cell * lit), y + 7, 0xFF000000 | ramp[Palette.LIGHT]);
         }
-        graphics.drawString(font, String.format(Locale.ROOT, "%d/%.1f", status.panelLevel(), status.asked().level()),
+        graphics.drawString(font, String.format(Locale.ROOT, "%.2f/%.1f", status.panelLevel(), status.asked().level()),
                 x + BAR_X + BAR_WIDTH + 4, y, TEXT);
     }
 

@@ -34,18 +34,18 @@ class FieldTuningTest {
     void levitationLevelsAreClamped() {
 
         assertEquals(0, T.levitation(0), EPS);
-        assertEquals(1.0, T.levitation(4), EPS);
-        assertEquals(1.5, T.levitation(99), EPS);
+        assertEquals(0.8, T.levitation(4), EPS);
+        assertEquals(1.0, T.levitation(99), EPS);
     }
 
     @Test
     void rejectsImpossibleTuning() {
 
         final java.util.List<Double> l = java.util.List.of(1.0);
-        assertThrows(IllegalArgumentException.class, () -> new FieldTuning(8, 256, 2, 32, 1.0, l, l, 4, 1.0, 1.25, 30));
-        assertThrows(IllegalArgumentException.class, () -> new FieldTuning(8, 256, 2, 32, 0.6, l, l, 4, 1.25, 1.0, 30));
-        assertThrows(IllegalArgumentException.class, () -> new FieldTuning(8, 256, 40, 32, 0.6, l, l, 4, 1.0, 1.25, 30));
-        assertThrows(IllegalArgumentException.class, () -> new FieldTuning(8, 256, 2, 32, 0.6, java.util.List.of(), l, 4, 1.0, 1.25, 30));
+        assertThrows(IllegalArgumentException.class, () -> new FieldTuning(8, 256, 2, 32, 1.0, l, l, 4, 1.0, 1.25, 30, 64, 256, 40));
+        assertThrows(IllegalArgumentException.class, () -> new FieldTuning(8, 256, 2, 32, 0.6, l, l, 4, 1.25, 1.0, 30, 64, 256, 40));
+        assertThrows(IllegalArgumentException.class, () -> new FieldTuning(8, 256, 40, 32, 0.6, l, l, 4, 1.0, 1.25, 30, 64, 256, 40));
+        assertThrows(IllegalArgumentException.class, () -> new FieldTuning(8, 256, 2, 32, 0.6, java.util.List.of(), l, 4, 1.0, 1.25, 30, 64, 256, 40));
     }
 
     @Test
@@ -87,7 +87,7 @@ class FieldTuningTest {
 
         assertEquals(0.125, T.strength(0.5), EPS);
         assertEquals(1.0 + 0.8 * 0.5, T.strength(4.8), EPS);
-        assertEquals(0.75, T.levitation(3), EPS);
+        assertEquals(0.6, T.levitation(3), EPS);
     }
 
     @Test
@@ -118,5 +118,23 @@ class FieldTuningTest {
             assertTrue(f <= previous + EPS, "fade rose at " + x);
             previous = f;
         }
+    }
+
+    @Test
+    void levitationAirThinsOutWithHeight() {
+
+        assertEquals(1, T.altitudeFactor(-10), EPS);
+        assertEquals(1, T.altitudeFactor(64), EPS);
+        assertEquals(0.5, T.altitudeFactor(160), EPS);
+        assertEquals(0, T.altitudeFactor(256), EPS);
+        assertEquals(0, T.altitudeFactor(1000), EPS);
+    }
+
+    @Test
+    void levitationNeverLiftsByItself() {
+
+        final FieldTuning t = new FieldTuning(8, 256, 2, 32, 0.6, java.util.List.of(1.0), java.util.List.of(0.5, 1.5), 4, 1.0, 1.25, 30, 64, 256, 40);
+        assertEquals(1, t.levitation(2), EPS);
+        assertEquals(1, t.levitation(9), EPS);
     }
 }

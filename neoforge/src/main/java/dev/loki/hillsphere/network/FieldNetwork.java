@@ -18,7 +18,6 @@
  */
 package dev.loki.hillsphere.network;
 
-import dev.loki.hillsphere.field.math.Vec3d;
 import dev.loki.hillsphere.field.resolve.CoreField;
 import dev.loki.hillsphere.world.ClientFields;
 import dev.loki.hillsphere.world.LevelFields;
@@ -41,7 +40,7 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 /** Sends the cores that changed to players, and applies them on the client. */
 public final class FieldNetwork {
 
-    private static final String PROTOCOL = "1";
+    private static final String PROTOCOL = "3";
 
     private FieldNetwork() {
     }
@@ -49,7 +48,8 @@ public final class FieldNetwork {
     public static void register(IEventBus modBus) {
 
         modBus.addListener(RegisterPayloadHandlersEvent.class, e -> e.registrar(PROTOCOL)
-                .playToClient(FieldSyncPayload.TYPE, FieldSyncPayload.CODEC, FieldNetwork::receive));
+                .playToClient(FieldSyncPayload.TYPE, FieldSyncPayload.CODEC, FieldNetwork::receive)
+                .playToServer(CoreSettingsPayload.TYPE, CoreSettingsPayload.CODEC, SettingsReceiver::receive));
         NeoForge.EVENT_BUS.addListener(LevelTickEvent.Post.class, e -> {
             if (e.getLevel() instanceof ServerLevel level) {
                 sendChanges(level);
@@ -84,7 +84,7 @@ public final class FieldNetwork {
     private static FieldSyncPayload payload(boolean replace, Map<BlockPos, CoreField> cores) {
 
         final List<FieldSyncPayload.Entry> entries = cores.entrySet().stream()
-                .map(e -> new FieldSyncPayload.Entry(e.getKey(), (float) e.getValue().radius(),
+                .map(e -> new FieldSyncPayload.Entry(e.getKey(), e.getValue().center(), (float) e.getValue().radius(),
                         (float) e.getValue().strength(), e.getValue().polarity()))
                 .toList();
         return new FieldSyncPayload(replace, entries);
@@ -94,8 +94,7 @@ public final class FieldNetwork {
 
         final Map<BlockPos, CoreField> cores = new HashMap<>();
         for (final FieldSyncPayload.Entry e : payload.entries()) {
-            final Vec3d center = new Vec3d(e.pos().getX() + 0.5, e.pos().getY() + 0.5, e.pos().getZ() + 0.5);
-            cores.put(e.pos(), new CoreField(center, e.radius(), e.strength(), e.polarity()));
+            cores.put(e.pos(), new CoreField(e.center(), e.radius(), e.strength(), e.polarity()));
         }
         context.enqueueWork(() -> ClientFields.apply(payload.replace(), cores));
     }

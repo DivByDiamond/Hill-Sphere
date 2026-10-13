@@ -18,6 +18,7 @@
  */
 package dev.loki.hillsphere.mixin;
 
+import dev.loki.hillsphere.debug.Debug;
 import dev.loki.hillsphere.entity.LivingGravity;
 import dev.loki.hillsphere.world.FieldLookup;
 
@@ -33,6 +34,16 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class ServerPacketMixin {
 
     private static final double HOVER_LIFT = 0.5;
+
+    /** Every time the server puts a player back or somewhere else; a bounce that is the server's doing shows here. */
+    @Inject(method = "teleport(DDDFFLjava/util/Set;)V", at = @At("HEAD"))
+    private void hillsphereLogTeleport(double x, double y, double z, float yRot, float xRot, java.util.Set<?> relative,
+            org.spongepowered.asm.mixin.injection.callback.CallbackInfo ci) {
+
+        final net.minecraft.server.level.ServerPlayer player = ((ServerGamePacketListenerImpl) (Object) this).player;
+        Debug.log("S {} TELEPORT t={} from={} to=({}, {}, {}) frame={}", player.getName().getString(), player.level().getGameTime(),
+                player.position(), x, y, z, LivingGravity.frameOf(player));
+    }
 
     @Inject(method = "noBlocksAround", at = @At("HEAD"), cancellable = true)
     private void hillsphereNotFloating(Entity entity, CallbackInfoReturnable<Boolean> cir) {

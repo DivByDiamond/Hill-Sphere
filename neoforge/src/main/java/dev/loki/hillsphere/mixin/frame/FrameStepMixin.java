@@ -20,6 +20,7 @@ package dev.loki.hillsphere.mixin.frame;
 
 import java.util.List;
 
+import dev.loki.hillsphere.debug.Debug;
 import dev.loki.hillsphere.entity.FrameState;
 import dev.loki.hillsphere.entity.StepHeights;
 import dev.loki.hillsphere.field.frame.GravityFrame;
@@ -86,6 +87,10 @@ public abstract class FrameStepMixin {
             for (float offer : StepHeights.of(risen, nearby, self.maxUpStep(), (float) done, axis, sign)) {
                 final Vec3 tried = hillsphereClip(flatMove.add(up.scale(offer)), risen, nearby, frame);
                 if (hillsphereAside(tried, up).lengthSqr() > hillsphereAside(resolved, up).lengthSqr()) {
+                    Debug.every("step" + self.getId() + self.level().isClientSide, self.level().getGameTime(), 2,
+                            "{} STEP {} offer={} maxUpStep={} asked={} resolved={} flatMove={} flatDone={} sinking={} ground={} frame={}",
+                            self.level().isClientSide ? "C" : "S", self.getName().getString(), offer, self.maxUpStep(), move, resolved,
+                            flatMove, flatDone, sinking, self.onGround(), frame);
                     cir.setReturnValue(tried.subtract(up.scale(done)));
                     return;
                 }

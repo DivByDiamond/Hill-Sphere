@@ -73,8 +73,13 @@ dependencies {
     compileOnly("dev.engine-room.flywheel:flywheel-neoforge-api-$mc:${prop("flywheel_version")}")
     runtimeOnly("dev.engine-room.flywheel:flywheel-neoforge-$mc:${prop("flywheel_version")}")
     implementation("com.tterrag.registrate:Registrate:${prop("registrate_version")}")
-    // The Create addons in run/mods need Sable at runtime; hill sphere itself does not touch it.
-    runtimeOnly("dev.ryanhcode.sable:sable-neoforge-$mc:${prop("sable_version")}") {
+    // Sable is optional: only compat/sable touches it, and only when the mod is loaded.
+    val sable = "dev.ryanhcode.sable:sable-neoforge-$mc:${prop("sable_version")}"
+    compileOnly(sable) {
+        exclude(group = "foundry.veil")
+        exclude(group = "com.tterrag.registrate")
+    }
+    runtimeOnly(sable) {
         exclude(group = "foundry.veil")
         exclude(group = "com.tterrag.registrate")
     }

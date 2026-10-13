@@ -25,6 +25,7 @@ import dev.loki.hillsphere.field.FieldTuning;
 import dev.loki.hillsphere.world.WorldFields;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import net.neoforged.fml.event.config.ModConfigEvent;
@@ -41,6 +42,9 @@ public final class HillSphereConfig {
     private static final int DEFAULT_MAX_CORES = 256;
     private static final AtomicReference<FieldTuning> CURRENT = new AtomicReference<>(FieldTuning.DEFAULT);
     private static final AtomicInteger MAX_CORES_NOW = new AtomicInteger(DEFAULT_MAX_CORES);
+    private static final AtomicBoolean SHIP_FORCES_NOW = new AtomicBoolean(true);
+    private static final AtomicBoolean DEBUG_NOW = new AtomicBoolean(false);
+    private static final AtomicBoolean SAFE_FALLS_NOW = new AtomicBoolean(false);
 
     private static final ModConfigSpec.DoubleValue MIN_RPM;
     private static final ModConfigSpec.DoubleValue MAX_RPM;
@@ -48,10 +52,16 @@ public final class HillSphereConfig {
     private static final ModConfigSpec.DoubleValue MAX_RADIUS;
     private static final ModConfigSpec.DoubleValue PLATEAU;
     private static final ModConfigSpec.DoubleValue STRESS;
+    private static final ModConfigSpec.DoubleValue LIFT_FULL_Y;
+    private static final ModConfigSpec.DoubleValue LIFT_ZERO_Y;
+    private static final ModConfigSpec.DoubleValue LIFT_MASS;
     private static final ModConfigSpec.DoubleValue BLEND_START;
     private static final ModConfigSpec.DoubleValue BLEND_END;
     private static final ModConfigSpec.IntValue RAMP_TICKS;
     private static final ModConfigSpec.IntValue MAX_CORES;
+    private static final ModConfigSpec.BooleanValue SHIP_FORCES;
+    private static final ModConfigSpec.BooleanValue DEBUG;
+    private static final ModConfigSpec.BooleanValue SAFE_FALLS;
     private static final ModConfigSpec.ConfigValue<List<? extends String>> DIMENSIONS;
     private static final ModConfigSpec.ConfigValue<List<? extends Double>> STRENGTHS;
     private static final ModConfigSpec.ConfigValue<List<? extends Double>> LEVITATION;
@@ -67,11 +77,17 @@ public final class HillSphereConfig {
         MAX_RADIUS = b.comment("Radius at the maximum speed, in blocks").defineInRange("maxRadius", d.maxRadius(), 0.5, 256);
         b.pop();
 
-        b.comment("Pull and levitation levels. Each list entry is one level the player can pick (at most 4 are used).").push("levels");
+        b.comment("Pull and levitation levels. Each list entry is one level the player can pick (at most 6 are used).").push("levels");
         STRENGTHS = b.comment("Pull per level, in multiples of vanilla gravity")
                 .defineList("strengths", d.levelStrengths(), () -> 1.0, o -> o instanceof Double v && v > 0);
-        LEVITATION = b.comment("Share of gravity cancelled per level (1 = weightless, above 1 = lifts)")
+        LEVITATION = b.comment("Share of gravity cancelled per level (1 = weightless; larger values count as 1)")
                 .defineList("levitation", d.levitationLevels(), () -> 1.0, o -> o instanceof Double v && v > 0);
+        LIFT_FULL_Y = b.comment("Height up to which levitation works at full strength")
+                .defineInRange("liftFullY", d.liftFullY(), -2048.0, 4096.0);
+        LIFT_ZERO_Y = b.comment("Height from which levitation is gone; in between it fades out, so ships settle at a height")
+                .defineInRange("liftZeroY", d.liftZeroY(), -2047.0, 4096.0);
+        LIFT_MASS = b.comment("Mass a levitation core holds up per block of field radius, in blocks of weight (0 = no limit); a faster core has a bigger field")
+                .defineInRange("liftMassPerRadius", d.liftMassPerRadius(), 0.0, 100000.0);
         STRESS = b.comment("Stress impact per RPM and per level (SU)").defineInRange("stressPerRpmPerLevel", d.stressPerRpmPerLevel(), 0, 1024);
         b.pop();
 
@@ -86,6 +102,12 @@ public final class HillSphereConfig {
         DIMENSIONS = b.comment("Pull multiplier per dimension, as dimension=multiplier; unlisted dimensions use 1")
                 .defineList("dimensionScale", DimensionScale.DEFAULTS, () -> "minecraft:overworld=1.0", o -> o instanceof String);
         MAX_CORES = b.comment("Most active cores per world; more are ignored").defineInRange("maxCores", DEFAULT_MAX_CORES, 1, 100_000);
+        SHIP_FORCES = b.comment("Cores move Sable ships: levitation lifts a ship, pulls and pushes act between ships")
+                .define("shipForces", true);
+        SAFE_FALLS = b.comment("Nobody takes fall damage while inside a core's field (pulling, pushing or levitating)")
+                .define("noFallDamageInField", false);
+        DEBUG = b.comment("Writes detailed movement, frame and ship lines marked [HSDBG] to the log; for hunting bugs")
+                .define("debug", false);
         SPEC = b.build();
     }
 
@@ -104,6 +126,9 @@ public final class HillSphereConfig {
         if (event.getConfig().getSpec() == SPEC) {
             CURRENT.set(build());
             MAX_CORES_NOW.set(MAX_CORES.get());
+            SHIP_FORCES_NOW.set(SHIP_FORCES.get());
+            DEBUG_NOW.set(DEBUG.get());
+            SAFE_FALLS_NOW.set(SAFE_FALLS.get());
             DimensionScale.load(DIMENSIONS.get());
             WorldFields.clear();
         }
@@ -115,7 +140,7 @@ public final class HillSphereConfig {
         try {
             return new FieldTuning(MIN_RPM.get(), MAX_RPM.get(), MIN_RADIUS.get(), MAX_RADIUS.get(), PLATEAU.get(),
                     levels(STRENGTHS.get()), levels(LEVITATION.get()), STRESS.get(),
-                    BLEND_START.get(), BLEND_END.get(), RAMP_TICKS.get());
+                    BLEND_START.get(), BLEND_END.get(), RAMP_TICKS.get(), LIFT_FULL_Y.get(), LIFT_ZERO_Y.get(), LIFT_MASS.get());
         } catch (IllegalArgumentException e) {
             Constants.LOG.warn("Hill Sphere config is inconsistent ({}), using defaults", e.getMessage());
             return FieldTuning.DEFAULT;
@@ -131,5 +156,23 @@ public final class HillSphereConfig {
     public static int maxCores() {
 
         return MAX_CORES_NOW.get();
+    }
+
+    /** Whether fields push ships; the field around a core on a ship moves with the ship either way. */
+    public static boolean shipForces() {
+
+        return SHIP_FORCES_NOW.get();
+    }
+
+    /** Whether the detailed [HSDBG] log lines are written. */
+    public static boolean debug() {
+
+        return DEBUG_NOW.get();
+    }
+
+    /** Whether falls inside a field hurt nobody. */
+    public static boolean safeFalls() {
+
+        return SAFE_FALLS_NOW.get();
     }
 }

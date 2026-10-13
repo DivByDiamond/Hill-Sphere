@@ -51,9 +51,7 @@ public final class GravityResolver {
 
         double lift = 0;
         for (final CoreField core : cores) {
-            if (core.polarity() == Polarity.LEVITATE) {
-                lift += core.strength() * core.fade(tuning, point);
-            }
+            lift += core.liftAt(tuning, point);
         }
         return lift;
     }
