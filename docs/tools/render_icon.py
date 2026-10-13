@@ -9,7 +9,7 @@ from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[2]
 TEX = ROOT / "common/src/main/resources/assets/hillsphere/textures/block"
-SIZE = 512
+SIZE = 1024
 LO, HI = 1.0, 15.0  # the body of the core in block pixels
 
 
