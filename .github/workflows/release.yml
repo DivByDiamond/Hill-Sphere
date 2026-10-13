@@ -1,0 +1,77 @@
+name: release
+
+# Push a tag such as 0.1.0-beta.1 (a "v" prefix is fine too): the mod jar is built and
+# attached to a GitHub release. Tags with a suffix (-alpha.1, -beta.1, -rc.1) are
+# marked as pre-releases. CurseForge upload runs only when the repository has the
+# variable CURSEFORGE_ID and the secret CURSEFORGE_API_KEY.
+
+on:
+  push:
+    tags: [ '*.*.*' ]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing tag to build and release
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      TAG: ${{ github.event.inputs.tag || github.ref_name }}
+      CURSEFORGE_ID: ${{ vars.CURSEFORGE_ID }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v6
+
+      - name: Build and check
+        run: ./gradlew build check
+
+      - name: Find the jar
+        id: jar
+        run: |
+          JAR=$(ls neoforge/build/libs/hillsphere-*.jar | grep -v -- '-sources\|-javadoc' | head -n1)
+          echo "path=$JAR" >> "$GITHUB_OUTPUT"
+
+      - name: GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ARGS=()
+          if [[ "$TAG" == *-* ]]; then ARGS+=(--prerelease); fi
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "${{ steps.jar.outputs.path }}" --clobber
+          else
+            gh release create "$TAG" "${{ steps.jar.outputs.path }}" \
+              --title "Hill Sphere $TAG" --generate-notes "${ARGS[@]}"
+          fi
+
+      - name: CurseForge
+        if: ${{ env.CURSEFORGE_ID != '' }}
+        uses: Kir-Antipov/mc-publish@v3.3
+        with:
+          curseforge-id: ${{ env.CURSEFORGE_ID }}
+          curseforge-token: ${{ secrets.CURSEFORGE_API_KEY }}
+          files: ${{ steps.jar.outputs.path }}
+          name: Hill Sphere ${{ env.TAG }}
+          version: ${{ env.TAG }}
+          version-type: ${{ contains(env.TAG, 'alpha') && 'alpha' || contains(env.TAG, '-') && 'beta' || 'release' }}
+          changelog-file: CHANGELOG.md
+          loaders: neoforge
+          game-versions: 1.21.1
+          java: 21
+          dependencies: |
+            create(required)
+            sable(optional)
