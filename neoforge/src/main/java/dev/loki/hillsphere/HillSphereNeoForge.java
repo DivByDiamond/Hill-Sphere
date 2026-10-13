@@ -20,13 +20,16 @@ package dev.loki.hillsphere;
 
 import dev.loki.hillsphere.client.ClientInit;
 import dev.loki.hillsphere.command.HillSphereCommand;
+import dev.loki.hillsphere.compat.Ships;
 import dev.loki.hillsphere.config.GogglesConfig;
 import dev.loki.hillsphere.config.HillSphereConfig;
+import dev.loki.hillsphere.debug.PlayerWatch;
 import dev.loki.hillsphere.network.FieldNetwork;
 import dev.loki.hillsphere.registry.ModBlockEntities;
 import dev.loki.hillsphere.registry.ModBlocks;
 import dev.loki.hillsphere.registry.ModFluids;
 import dev.loki.hillsphere.registry.ModItems;
+import dev.loki.hillsphere.rule.FallRule;
 import dev.loki.hillsphere.world.WorldFields;
 
 import net.neoforged.bus.api.IEventBus;
@@ -54,6 +57,9 @@ public class HillSphereNeoForge {
         ModFluids.register(modBus);
         NeoForge.EVENT_BUS.addListener(LevelEvent.Unload.class, e -> WorldFields.forget(e.getLevel()));
         FieldNetwork.register(modBus);
+        PlayerWatch.register(NeoForge.EVENT_BUS);
+        FallRule.register(NeoForge.EVENT_BUS);
+        Ships.init();
         NeoForge.EVENT_BUS.addListener(RegisterCommandsEvent.class, e -> HillSphereCommand.register(e.getDispatcher()));
         if (FMLEnvironment.dist.isClient()) {
             ClientInit.init(modBus);

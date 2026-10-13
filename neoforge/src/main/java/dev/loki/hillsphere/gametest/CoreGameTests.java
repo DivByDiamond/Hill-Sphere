@@ -64,15 +64,22 @@ public final class CoreGameTests {
         return powered(helper, rpm, polarity, level, RedstoneMode.OFF_ON_SIGNAL);
     }
 
-    static HillCoreBlockEntity powered(GameTestHelper helper, int rpm, Polarity polarity, int level, RedstoneMode mode) {
+    public static HillCoreBlockEntity powered(GameTestHelper helper, int rpm, Polarity polarity, int level, RedstoneMode mode) {
 
-        helper.setBlock(MOTOR, AllBlocks.CREATIVE_MOTOR.getDefaultState().setValue(CreativeMotorBlock.FACING, Direction.EAST));
-        helper.setBlock(CORE, ModBlocks.HILL_CORE.get().defaultBlockState().setValue(HillCoreBlock.AXIS, Axis.X));
-        CoreCleanup.removeWhenDone(helper, CORE);
-        ((CreativeMotorBlockEntity) helper.getBlockEntity(MOTOR)).generatedSpeed.setValue(rpm);
-        final HillCoreBlockEntity core = (HillCoreBlockEntity) helper.getBlockEntity(CORE);
-        core.settings().configure(polarity, level, mode);
-        return core;
+        return powered(helper, MOTOR, CORE, rpm, polarity, level, mode);
+    }
+
+    /** The same motor and core, wherever the test needs them to stand. */
+    public static HillCoreBlockEntity powered(GameTestHelper helper, BlockPos motor, BlockPos core, int rpm, Polarity polarity,
+            int level, RedstoneMode mode) {
+
+        helper.setBlock(motor, AllBlocks.CREATIVE_MOTOR.getDefaultState().setValue(CreativeMotorBlock.FACING, Direction.EAST));
+        helper.setBlock(core, ModBlocks.HILL_CORE.get().defaultBlockState().setValue(HillCoreBlock.AXIS, Axis.X));
+        CoreCleanup.removeWhenDone(helper, core);
+        ((CreativeMotorBlockEntity) helper.getBlockEntity(motor)).generatedSpeed.setValue(rpm);
+        final HillCoreBlockEntity entity = (HillCoreBlockEntity) helper.getBlockEntity(core);
+        entity.settings().configure(polarity, level, mode);
+        return entity;
     }
 
     @GameTest(template = EMPTY, timeoutTicks = 300, batch = "coreSpinsUpAndMakesAField")
@@ -118,13 +125,17 @@ public final class CoreGameTests {
         helper.assertTrue(loaded instanceof HillCoreBlockEntity, "the saved core should load back");
         final HillCoreBlockEntity back = (HillCoreBlockEntity) loaded;
         helper.assertTrue(isSet(back), "settings must survive saving");
+        back.settings().configure(Polarity.ATTRACT, 4.27, RedstoneMode.MANUAL);
+        helper.assertTrue(back.settings().level() == 4.25, "a level between whole numbers snaps to the 0.05 step");
+        back.settings().configure(Polarity.ATTRACT, Double.NaN, RedstoneMode.MANUAL);
+        helper.assertTrue(back.settings().level() == 0, "a level that is no number counts as 0");
         helper.succeed();
     }
 
     @GameTest(template = EMPTY, timeoutTicks = 400, batch = "levitationHoldsAnItemUp")
     public static void levitationHoldsAnItemUp(GameTestHelper helper) {
 
-        powered(helper, 128, Polarity.LEVITATE, 4);
+        powered(helper, 128, Polarity.LEVITATE, 6);
         final Vec3 start = new Vec3(2.5, 4.0, 3.5);
         helper.runAfterDelay(100, () -> {
             final ItemEntity item = helper.spawnItem(Items.COBBLESTONE, start);

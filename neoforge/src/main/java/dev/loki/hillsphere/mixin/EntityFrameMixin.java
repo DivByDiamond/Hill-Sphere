@@ -18,6 +18,7 @@
  */
 package dev.loki.hillsphere.mixin;
 
+import dev.loki.hillsphere.debug.Debug;
 import dev.loki.hillsphere.entity.FrameState;
 import dev.loki.hillsphere.entity.FrameSwitch;
 import dev.loki.hillsphere.entity.LivingGravity;
@@ -80,15 +81,26 @@ public abstract class EntityFrameMixin implements FrameState {
         hillsphereInside = inside;
     }
 
+    /** A rider stays in the frame it sat down in: the seat holds it, and turning its body would pull it off the seat. */
     @Override
     public void hillsphereRefresh() {
 
         final Entity self = (Entity) (Object) this;
         final Gravity planet = hillspherePull.next(FieldLookup.planetAt(self));
         hillsphereStrength = Gravity.VANILLA.equals(planet) ? 1 : planet.strength();
+        if (self.isPassenger()) {
+            return;
+        }
         final GravityFrame next = hillsphereSwitch.next(self, hillsphereFrame, planet);
-        if (next != hillsphereFrame && hillsphereSwitch.turn(self, hillsphereFrame, next)) {
-            hillsphereFrame = next;
+        if (next != hillsphereFrame) {
+            final boolean turned = hillsphereSwitch.turn(self, hillsphereFrame, next);
+            Debug.every("turn " + self.getId() + self.level().isClientSide, self.level().getGameTime(), 10,
+                    "frame switch {} {}->{} turned={} pull={} pos={} ground={} side={}", self.getName().getString(),
+                    hillsphereFrame, next, turned, planet.direction(), self.position(), self.onGround(),
+                    self.level().isClientSide ? "C" : "S");
+            if (turned) {
+                hillsphereFrame = next;
+            }
         }
     }
 

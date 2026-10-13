@@ -27,6 +27,7 @@ import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.vehicle.Boat;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.gametest.GameTestHolder;
@@ -116,6 +117,22 @@ public final class LivingGameTests {
                     helper.assertTrue(LivingGravity.frameOf(pig).isVanilla(), "its down should stay down, not " + LivingGravity.frameOf(pig));
                     helper.succeed();
                 });
+            });
+        });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 400, batch = "aRiderKeepsItsDownAndStaysOnItsSeat")
+    public static void aRiderKeepsItsDownAndStaysOnItsSeat(GameTestHelper helper) {
+
+        CoreGameTests.liftCore(helper, Polarity.ATTRACT);
+        helper.runAfterDelay(100, () -> {
+            final Boat seat = helper.spawn(EntityType.BOAT, new Vec3(2.5, 1.0, 3.5));
+            final Mob pig = helper.spawnWithNoFreeWill(EntityType.PIG, new Vec3(2.5, 1.0, 3.5));
+            pig.startRiding(seat, true);
+            helper.runAfterDelay(80, () -> {
+                helper.assertTrue(pig.isPassenger(), "the pig should still be on its seat");
+                helper.assertTrue(LivingGravity.frameOf(pig).isVanilla(), "a rider's down must not turn, not " + LivingGravity.frameOf(pig));
+                helper.succeed();
             });
         });
     }

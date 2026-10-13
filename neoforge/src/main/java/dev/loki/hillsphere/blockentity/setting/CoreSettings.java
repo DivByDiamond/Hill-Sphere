@@ -21,38 +21,40 @@ package dev.loki.hillsphere.blockentity.setting;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BehaviourType;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueBoxTransform;
-import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsBehaviour;
-import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsBoard;
-import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsFormatter;
 import com.simibubi.create.foundation.blockEntity.behaviour.scrollValue.ScrollValueBehaviour;
 import dev.loki.hillsphere.block.HillCoreBlock;
+import dev.loki.hillsphere.client.screen.CoreSettingsScreen;
 import dev.loki.hillsphere.field.Polarity;
 import dev.loki.hillsphere.field.control.RedstoneMode;
 
+import net.createmod.catnip.platform.CatnipServices;
+import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.BlockHitResult;
 
 /**
- * All the settings of a core on one panel: polarity, level and redstone mode, one row each. Create sizes
- * the panel by the largest value, so every option sits {@value SettingRows#STEP} values apart, which makes a wide bar
- * with a notch for each choice; rows with fewer choices stop at their last one.
+ * The settings of a core: polarity, level and redstone mode. A right click on the panel face opens
+ * {@link CoreSettingsScreen}, where polarity and mode are switches and the level a slider.
  *
- * <p>It derives from {@link ScrollValueBehaviour} on purpose: Create only draws the settings hint (the outline on
- * the face and the "click and hold to edit" tip) for behaviours of that class, while the panel itself opens for any
- * {@link ValueSettingsBehaviour}.
+ * <p>It derives from {@link ScrollValueBehaviour} on purpose: Create only draws the outline on the face
+ * for behaviours of that class. The panel Create offers for it is switched off, since its sliders
+ * suit numbers, not choices.
  */
 public class CoreSettings extends ScrollValueBehaviour {
 
     public static final BehaviourType<CoreSettings> TYPE = new BehaviourType<>("hillsphere_settings");
 
+    /** The level moves in steps of this size, so 4.25 is a valid level. */
+    public static final double LEVEL_STEP = 0.05;
+
     private Polarity polarity = Polarity.ATTRACT;
-    private int level = 1;
+    private double level = 1;
     private RedstoneMode mode = RedstoneMode.OFF_ON_SIGNAL;
-    private int lastRow = SettingRows.LEVEL;
 
     public CoreSettings(Component label, SmartBlockEntity be, ValueBoxTransform slot) {
 
@@ -65,7 +67,7 @@ public class CoreSettings extends ScrollValueBehaviour {
     }
 
     /** The level on the panel, 0 to {@value HillCoreBlock#MAX_LEVEL}: the ceiling that redstone may scale. */
-    public int level() {
+    public double level() {
 
         return level;
     }
@@ -75,13 +77,29 @@ public class CoreSettings extends ScrollValueBehaviour {
         return mode;
     }
 
-    /** Sets everything at once, as a player would with the panel. */
-    public void configure(Polarity newPolarity, int newLevel, RedstoneMode newMode) {
+    /** Sets everything at once, as a player would with the screen; a level outside the range or off the step is brought in. */
+    public void configure(Polarity newPolarity, double newLevel, RedstoneMode newMode) {
 
+        final double before = level;
+        final Polarity beforePolarity = polarity;
+        final RedstoneMode beforeMode = mode;
         polarity = newPolarity;
-        level = SettingRows.level(newLevel);
+        level = clampLevel(newLevel);
         mode = newMode;
-        changed();
+        if (level != before || polarity != beforePolarity || mode != beforeMode) {
+            blockEntity.setChanged();
+            blockEntity.sendData();
+        }
+    }
+
+    /** The nearest valid level; anything that is not a number counts as 0. */
+    public static double clampLevel(double wanted) {
+
+        if (!Double.isFinite(wanted)) {
+            return 0;
+        }
+        final double stepped = Math.round(wanted / LEVEL_STEP) * LEVEL_STEP;
+        return Mth.clamp(Math.round(stepped * 100) / 100.0, 0, HillCoreBlock.MAX_LEVEL);
     }
 
     @Override
@@ -91,43 +109,25 @@ public class CoreSettings extends ScrollValueBehaviour {
     }
 
     @Override
-    public ValueSettingsBoard createBoard(Player player, BlockHitResult hitResult) {
+    public boolean acceptsValueSettings() {
 
-        return new ValueSettingsBoard(label, HillCoreBlock.MAX_LEVEL * SettingRows.STEP, SettingRows.STEP, SettingRows.labels(),
-                new ValueSettingsFormatter(SettingRows::format));
+        return false;
     }
 
     /** The face outline shows the panel level, the one number that says how the core runs. */
     @Override
     public String formatValue() {
 
-        return Integer.toString(level);
+        return String.format(java.util.Locale.ROOT, "%.2f", level).replaceAll("\\.?0+$", "");
     }
 
     @Override
-    public ValueSettings getValueSettings() {
+    public void onShortInteract(Player player, InteractionHand hand, Direction side, BlockHitResult hitResult) {
 
-        return new ValueSettings(lastRow, SettingRows.STEP * switch (lastRow) {
-            case SettingRows.POLARITY -> polarity.ordinal();
-            case SettingRows.MODE -> mode.ordinal();
-            default -> level;
-        });
-    }
-
-    @Override
-    public void setValueSettings(Player player, ValueSettings settings, boolean ctrlDown) {
-
-        final int before = fingerprint(polarity, level, mode);
-        final int choice = SettingRows.choice(settings);
-        lastRow = Mth.clamp(settings.row(), SettingRows.POLARITY, SettingRows.MODE);
-        switch (lastRow) {
-            case SettingRows.POLARITY -> polarity = SettingRows.polarity(choice);
-            case SettingRows.MODE -> mode = SettingRows.mode(choice);
-            default -> level = SettingRows.level(choice);
-        }
-        if (fingerprint(polarity, level, mode) != before) {
-            playFeedbackSound(this);
-            changed();
+        super.onShortInteract(player, hand, side, hitResult);
+        if (getWorld().isClientSide) {
+            final CoreSettings self = this;
+            CatnipServices.PLATFORM.executeOnClientOnly(() -> () -> CoreSettingsScreen.open(self));
         }
     }
 
@@ -135,7 +135,7 @@ public class CoreSettings extends ScrollValueBehaviour {
     public void write(CompoundTag nbt, HolderLookup.Provider registries, boolean clientPacket) {
 
         nbt.putInt("HillPolarity", polarity.ordinal());
-        nbt.putInt("HillLevel", level);
+        nbt.putDouble("HillLevel", level);
         nbt.putInt("HillMode", mode.ordinal());
         super.write(nbt, registries, clientPacket);
     }
@@ -143,20 +143,14 @@ public class CoreSettings extends ScrollValueBehaviour {
     @Override
     public void read(CompoundTag nbt, HolderLookup.Provider registries, boolean clientPacket) {
 
-        polarity = SettingRows.polarity(nbt.getInt("HillPolarity"));
-        level = SettingRows.level(nbt.getInt("HillLevel"));
-        mode = SettingRows.mode(nbt.getInt("HillMode"));
+        polarity = pick(Polarity.values(), nbt.getInt("HillPolarity"));
+        level = clampLevel(nbt.getDouble("HillLevel"));
+        mode = pick(RedstoneMode.values(), nbt.getInt("HillMode"));
         super.read(nbt, registries, clientPacket);
     }
 
-    private void changed() {
+    private static <E> E pick(E[] values, int index) {
 
-        blockEntity.setChanged();
-        blockEntity.sendData();
-    }
-
-    private static int fingerprint(Polarity polarity, int level, RedstoneMode mode) {
-
-        return (polarity.ordinal() * 16 + level) * 16 + mode.ordinal();
+        return values[Mth.clamp(index, 0, values.length - 1)];
     }
 }

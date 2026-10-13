@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
 
 /**
  * Spatial index of cores on a uniform grid, so a query at a point looks at one cell instead
@@ -104,11 +105,13 @@ public final class FieldIndex<K> {
     /** Every core in the index, in no particular order. */
     public List<CoreField> all() {
 
-        final List<CoreField> result = new ArrayList<>(entries.size());
-        for (final Entry entry : entries.values()) {
-            result.add(entry.field);
-        }
-        return result;
+        return entries.values().stream().map(Entry::field).toList();
+    }
+
+    /** Every core with its key, in no particular order. */
+    public void forEach(BiConsumer<? super K, ? super CoreField> action) {
+
+        entries.forEach((key, entry) -> action.accept(key, entry.field));
     }
 
     public void remove(K key) {

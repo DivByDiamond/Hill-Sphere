@@ -20,6 +20,7 @@ package dev.loki.hillsphere.network;
 
 import dev.loki.hillsphere.Constants;
 import dev.loki.hillsphere.field.Polarity;
+import dev.loki.hillsphere.field.math.Vec3d;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,8 +40,12 @@ public record FieldSyncPayload(boolean replace, List<Entry> entries) implements 
     public static final Type<FieldSyncPayload> TYPE =
             new Type<>(ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "field_sync"));
 
+    private static final StreamCodec<RegistryFriendlyByteBuf, Vec3d> CENTER_CODEC = StreamCodec.composite(
+            ByteBufCodecs.DOUBLE, Vec3d::x, ByteBufCodecs.DOUBLE, Vec3d::y, ByteBufCodecs.DOUBLE, Vec3d::z, Vec3d::new);
+
     private static final StreamCodec<RegistryFriendlyByteBuf, Entry> ENTRY_CODEC = StreamCodec.composite(
             BlockPos.STREAM_CODEC, Entry::pos,
+            CENTER_CODEC, Entry::center,
             ByteBufCodecs.FLOAT, Entry::radius,
             ByteBufCodecs.FLOAT, Entry::strength,
             ByteBufCodecs.idMapper(i -> Polarity.values()[i], Polarity::ordinal), Entry::polarity,
@@ -57,7 +62,7 @@ public record FieldSyncPayload(boolean replace, List<Entry> entries) implements 
         return TYPE;
     }
 
-    /** One core: its block, size, pull and kind. */
-    public record Entry(BlockPos pos, float radius, float strength, Polarity polarity) {
+    /** One core: its block, where its field is centred in the world (not the block on a ship), size, pull and kind. */
+    public record Entry(BlockPos pos, Vec3d center, float radius, float strength, Polarity polarity) {
     }
 }

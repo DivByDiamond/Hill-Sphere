@@ -9,6 +9,7 @@
     "LivingEntityMixin",
     "PlayerFrameMixin",
     "ServerPacketMixin",
+    "debug.MoveTraceMixin",
     "eye.FrameFacingMixin",
     "eye.FrameFluidEyeMixin",
     "eye.FrameSightMixin",
@@ -16,6 +17,7 @@
     "frame.FrameStepMixin",
     "frame.FrameUseContextMixin",
     "frame.FrameWallMixin",
+    "sable.ShipCarryMixin",
     "shot.FrameDropMixin",
     "shot.FrameMuzzleMixin",
     "shot.FrameShotMixin"

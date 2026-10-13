@@ -86,7 +86,7 @@ class CoreDriverTest {
     void levitationUsesItsOwnLevels() {
 
         final CoreField f = run(new CoreDriver(), 100, Polarity.LEVITATE, 5, 128, true);
-        assertEquals(1.25, f.strength(), 1e-9);
+        assertEquals(0.9, f.strength(), 1e-9);
         assertEquals(Polarity.LEVITATE, f.polarity());
     }
 }

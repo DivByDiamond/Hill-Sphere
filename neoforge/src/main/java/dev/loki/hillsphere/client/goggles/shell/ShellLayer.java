@@ -44,6 +44,7 @@ public final class ShellLayer implements WorldLayer {
     private static final double SPIN = 0.002;
     private static final double VIEW = 72;
 
+    private final ShellEase ease = new ShellEase();
     private List<CoreField> shells = List.of();
     private List<Boundary> boundaries = List.of();
 
@@ -56,6 +57,7 @@ public final class ShellLayer implements WorldLayer {
 
         final List<CoreField> near = state.near();
         shells = near.subList(0, Math.min(near.size(), GogglesConfig.MAX_SHELLS.get()));
+        ease.tick(shells);
         final List<Boundary> found = new ArrayList<>();
         for (int i = 0; i < shells.size(); i++) {
             for (int j = i + 1; j < shells.size(); j++) {
@@ -82,9 +84,10 @@ public final class ShellLayer implements WorldLayer {
         final Lines lines = new Lines(brush, VIEW);
         for (final CoreField core : shells) {
             final int[] ramp = Palette.of(core.polarity());
-            final Vec3 centre = GogglesState.of(core.center());
-            lines.sphere(centre, core.radius(), 12, 5, spin, Palette.argb(ramp[Palette.MAIN], 0.45 * opacity));
-            lines.sphere(centre, core.radius() * state.tuning().plateau(), 20, 9, -spin, Palette.argb(ramp[Palette.DARK], 0.3 * opacity));
+            final Vec3 centre = ease.centre(core, partialTick);
+            final double radius = ease.radius(core, partialTick);
+            lines.sphere(centre, radius, 12, 5, spin, Palette.argb(ramp[Palette.MAIN], 0.45 * opacity));
+            lines.sphere(centre, radius * state.tuning().plateau(), 20, 9, -spin, Palette.argb(ramp[Palette.DARK], 0.3 * opacity));
         }
         for (final Boundary boundary : boundaries) {
             drawBoundary(lines, boundary, Palette.argb(Palette.PALE, 0.6 * opacity));

@@ -35,6 +35,9 @@ import java.util.List;
  * @param blendStart magnitude ratio where two fields start to separate
  * @param blendEnd magnitude ratio where the stronger field fully wins
  * @param rampTicks ticks the field takes to grow to or shrink from its target
+ * @param liftFullY height up to which levitation works at full strength
+ * @param liftZeroY height from which levitation is gone and gravity is whole again
+ * @param liftMassPerRadius mass (in blocks of weight) a core can hold up per block of its field radius; 0 means no limit
  */
 public record FieldTuning(
         double minRpm,
@@ -47,10 +50,13 @@ public record FieldTuning(
         double stressPerRpmPerLevel,
         double blendStart,
         double blendEnd,
-        int rampTicks) {
+        int rampTicks,
+        double liftFullY,
+        double liftZeroY,
+        double liftMassPerRadius) {
 
     public static final FieldTuning DEFAULT = new FieldTuning(
-            8, 256, 2, 32, 0.6, List.of(0.25, 0.5, 0.75, 1.0, 1.5, 2.0), List.of(0.25, 0.5, 0.75, 1.0, 1.25, 1.5), 4, 1.0, 1.25, 30);
+            8, 256, 2, 32, 0.6, List.of(0.25, 0.5, 0.75, 1.0, 1.5, 2.0), List.of(0.2, 0.4, 0.6, 0.8, 0.9, 1.0), 4, 1.0, 1.25, 30, 64, 256, 40);
 
     public FieldTuning {
 
@@ -61,6 +67,8 @@ public record FieldTuning(
         require(plateau >= 0 && plateau < 1, "plateau must be in [0, 1)");
         require(blendEnd > blendStart, "blendEnd must be above blendStart");
         require(rampTicks > 0, "rampTicks must be positive");
+        require(liftZeroY > liftFullY, "liftZeroY must be above liftFullY");
+        require(liftMassPerRadius >= 0, "liftMassPerRadius must not be negative");
         require(!levelStrengths.isEmpty() && !levitationLevels.isEmpty(), "levels must not be empty");
     }
 
@@ -98,10 +106,20 @@ public record FieldTuning(
         return along(levelStrengths, level);
     }
 
-    /** Levitation share for a level, with the same scale as {@link #strength(double)}. */
+    /** Levitation share for a level, with the same scale as {@link #strength(double)}; never above 1, so it never lifts by itself. */
     public double levitation(double level) {
 
-        return along(levitationLevels, level);
+        return Math.min(1, along(levitationLevels, level));
+    }
+
+    /**
+     * How much of its levitation survives at a height, like air thinning out: 1 up to {@code liftFullY},
+     * running down in a straight line to 0 at {@code liftZeroY}. Higher up gravity wins back, so a ship
+     * pushed up by thrust settles at a height instead of climbing for ever.
+     */
+    public double altitudeFactor(double y) {
+
+        return Math.max(0, Math.min(1, (liftZeroY - y) / (liftZeroY - liftFullY)));
     }
 
     /** Stress the core puts on the network, in SU; it grows in proportion to the level. */

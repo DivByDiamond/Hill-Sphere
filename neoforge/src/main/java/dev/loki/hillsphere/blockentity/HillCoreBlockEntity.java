@@ -24,12 +24,14 @@ import dev.loki.hillsphere.block.FieldState;
 import dev.loki.hillsphere.block.HillCoreBlock;
 import dev.loki.hillsphere.blockentity.setting.CoreSettingSlot;
 import dev.loki.hillsphere.blockentity.setting.CoreSettings;
+import dev.loki.hillsphere.compat.Ships;
 import dev.loki.hillsphere.config.HillSphereConfig;
 import dev.loki.hillsphere.field.CoreDriver;
 import dev.loki.hillsphere.field.Polarity;
 import dev.loki.hillsphere.field.control.Control;
 import dev.loki.hillsphere.field.math.Vec3d;
 import dev.loki.hillsphere.registry.ModBlockEntities;
+import dev.loki.hillsphere.world.LevelFields;
 import dev.loki.hillsphere.world.WorldFields;
 
 import java.util.List;
@@ -39,7 +41,10 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
-/** Turns the rotation a core receives and its settings into a gravity field. */
+/**
+ * Turns the rotation a core receives and its settings into a gravity field. The field is always
+ * centred where the core is in the world, so a core on a ship takes its field along with the ship.
+ */
 public class HillCoreBlockEntity extends KineticBlockEntity {
 
     private final CoreDriver driver = new CoreDriver();
@@ -63,7 +68,7 @@ public class HillCoreBlockEntity extends KineticBlockEntity {
     @Override
     public float calculateStressApplied() {
 
-        final int level = settings == null ? 0 : settings.level();
+        final double level = settings == null ? 0 : settings.level();
         lastStressApplied = (float) (HillSphereConfig.tuning().stressPerRpmPerLevel() * level);
         return lastStressApplied;
     }
@@ -78,19 +83,21 @@ public class HillCoreBlockEntity extends KineticBlockEntity {
         final int signal = level.getBestNeighborSignal(worldPosition);
         control = settings.mode().apply(settings.polarity(), settings.level(), signal);
         final BlockPos p = worldPosition;
-        WorldFields.of(level).update(p, driver.step(HillSphereConfig.tuning(),
-                new Vec3d(p.getX() + 0.5, p.getY() + 0.5, p.getZ() + 0.5), control.polarity(), control.level(),
+        final Vec3d center = Ships.toWorld(level, new Vec3d(p.getX() + 0.5, p.getY() + 0.5, p.getZ() + 0.5));
+        WorldFields.of(level).update(p, driver.step(HillSphereConfig.tuning(), center, control.polarity(), control.level(),
                 Math.abs(getSpeed()), !isOverStressed()));
         showState();
     }
 
+    /** Destroyed, moved onto a ship or unloaded with its chunk (or its ship): either way its field is gone. */
     @Override
-    public void remove() {
+    public void invalidate() {
 
-        if (level != null && !level.isClientSide) {
-            WorldFields.of(level).remove(worldPosition);
+        final LevelFields fields = level == null || level.isClientSide ? null : WorldFields.peek(level);
+        if (fields != null) {
+            fields.remove(worldPosition);
         }
-        super.remove();
+        super.invalidate();
     }
 
     public CoreSettings settings() {

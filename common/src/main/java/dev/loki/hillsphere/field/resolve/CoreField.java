@@ -40,6 +40,18 @@ public record CoreField(Vec3d center, double radius, double strength, Polarity p
         return polarity == Polarity.REPEL ? toCore.scale(-1) : toCore;
     }
 
+    /** Share of gravity a levitation core cancels in the point, thinner with height; 0 for any other core. */
+    public double liftAt(FieldTuning tuning, Vec3d point) {
+
+        return polarity == Polarity.LEVITATE ? strength * fade(tuning, point) * tuning.altitudeFactor(point.y()) : 0;
+    }
+
+    /** This core's own pull in the point, in multiples of vanilla gravity; zero for levitation. */
+    public Vec3d pullAt(FieldTuning tuning, Vec3d point) {
+
+        return polarity == Polarity.LEVITATE ? Vec3d.ZERO : direction(point).scale(strength * fade(tuning, point));
+    }
+
     /** Falloff factor in the point, 0 when it is outside the field. */
     double fade(FieldTuning tuning, Vec3d point) {
 

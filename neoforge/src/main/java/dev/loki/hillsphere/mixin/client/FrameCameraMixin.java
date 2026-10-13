@@ -21,6 +21,7 @@ package dev.loki.hillsphere.mixin.client;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import dev.loki.hillsphere.client.camera.FrameEyeMath;
+import dev.loki.hillsphere.compat.Ships;
 import dev.loki.hillsphere.entity.LivingGravity;
 import dev.loki.hillsphere.field.frame.GravityFrame;
 
@@ -47,7 +48,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * second, so a frame switch under the camera is a sweep instead of a hard cut; when the frame
  * turns vanilla again the turn eases back to nothing rather than snapping. In first person the eye
  * is pulled back along the frame's "up" until it is in clear air, so a wall beside the head cannot
- * swallow the view.
+ * swallow the view. While a ship turns the camera of a seated rider, the ship's turn wins and this
+ * one eases back to nothing, so the two never stack.
  */
 @Mixin(value = Camera.class, priority = 1001)
 public abstract class FrameCameraMixin {
@@ -132,11 +134,11 @@ public abstract class FrameCameraMixin {
         original.call(camera, eye.x, eye.y, eye.z);
     }
 
-    /** The frame of the camera's own entity; null before the first setup. */
+    /** The frame of the camera's own entity; vanilla before the first setup and while a ship turns the camera. */
     @Unique
     private GravityFrame hillsphereFrame() {
 
-        if (this.entity == null) {
+        if (this.entity == null || Ships.turnsCamera(this.entity)) {
             return GravityFrame.DOWN;
         }
         return LivingGravity.frameOf(this.entity);
