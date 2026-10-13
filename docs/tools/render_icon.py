@@ -72,8 +72,10 @@ def cube(img):
         shade = 0.55 + 0.45 * abs(np.dot(np.eye(3)[axis], view))
         rgb = colour[..., :3] * shade
         alpha = colour[..., 3:4] / 255.0
-        if name == "hill_core_face":  # the window shows the glowing core
-            rgb = np.where(alpha > 0.5, rgb, np.array([70, 215, 235], np.float32) * shade)
+        if name == "hill_core_face":  # the window is open: dark inside, a faint glow at its middle
+            depth = np.clip(1.0 - np.hypot(u - 0.5, v - 0.5) * 2.2, 0, 1)[..., None]
+            inside_colour = np.array([8, 10, 20], np.float32) + np.array([20, 80, 95], np.float32) * depth ** 2
+            rgb = np.where(alpha > 0.5, rgb, inside_colour * shade)
             alpha = np.ones_like(alpha)
         paint = inside[..., None] & (alpha > 0.5)
         img[paint[..., 0]] = rgb[paint[..., 0]]
