@@ -21,6 +21,7 @@ package dev.loki.hillsphere.config;
 import dev.loki.hillsphere.Constants;
 import dev.loki.hillsphere.block.HillCoreBlock;
 import dev.loki.hillsphere.field.FieldTuning;
+import dev.loki.hillsphere.field.control.AirControl;
 
 import dev.loki.hillsphere.world.WorldFields;
 
@@ -99,6 +100,8 @@ public final class HillSphereConfig {
         RAMP_TICKS = b.comment("Ticks a field takes to grow or fade").defineInRange("rampTicks", d.rampTicks(), 1, 1200);
         b.pop();
 
+        AirConfig.define(b);
+
         DIMENSIONS = b.comment("Pull multiplier per dimension, as dimension=multiplier; unlisted dimensions use 1")
                 .defineList("dimensionScale", DimensionScale.DEFAULTS, () -> "minecraft:overworld=1.0", o -> o instanceof String);
         MAX_CORES = b.comment("Most active cores per world; more are ignored").defineInRange("maxCores", DEFAULT_MAX_CORES, 1, 100_000);
@@ -129,6 +132,7 @@ public final class HillSphereConfig {
             SHIP_FORCES_NOW.set(SHIP_FORCES.get());
             DEBUG_NOW.set(DEBUG.get());
             SAFE_FALLS_NOW.set(SAFE_FALLS.get());
+            AirConfig.load();
             DimensionScale.load(DIMENSIONS.get());
             WorldFields.clear();
         }
@@ -168,6 +172,12 @@ public final class HillSphereConfig {
     public static boolean debug() {
 
         return DEBUG_NOW.get();
+    }
+
+    /** How players steer and slow down in a field without support. */
+    public static AirControl airControl() {
+
+        return AirConfig.current();
     }
 
     /** Whether falls inside a field hurt nobody. */

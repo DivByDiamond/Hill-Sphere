@@ -20,6 +20,8 @@ package dev.loki.hillsphere.compat.sable;
 
 import dev.loki.hillsphere.compat.ShipAccess;
 import dev.loki.hillsphere.field.math.Vec3d;
+import dev.loki.hillsphere.field.shape.Deck;
+import net.minecraft.core.BlockPos;
 import dev.ryanhcode.sable.Sable;
 import dev.ryanhcode.sable.neoforge.event.ForgeSablePrePhysicsTickEvent;
 
@@ -48,6 +50,12 @@ public final class SableShips implements ShipAccess {
 
         final Vec3 world = Sable.HELPER.projectOutOfSubLevel(level, new Vec3(point.x(), point.y(), point.z()));
         return new Vec3d(world.x, world.y, world.z);
+    }
+
+    @Override
+    public Deck hullOf(Level level, BlockPos pos) {
+
+        return ShipHull.of(level, pos);
     }
 
     @Override

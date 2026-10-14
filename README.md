@@ -10,6 +10,8 @@ has not seen long play sessions yet. See [CHANGELOG.md](CHANGELOG.md).
 
 - **Hill Core** block, spun by Create rotation: speed sets the radius of the field, the settings
   screen (use the block) sets polarity, strength and redstone behavior
+- Two shapes: a **sphere** whose "down" points at the core, or a **deck** with one "down" all over a box,
+  which on a ship covers the whole ship
 - Players, mobs, items and projectiles fall toward (or away from) the nearest powered core, walk on
   walls and ceilings, and float in weightless fields
 - **Gravite** ore with a Create processing chain, and **Goggles** that show the fields

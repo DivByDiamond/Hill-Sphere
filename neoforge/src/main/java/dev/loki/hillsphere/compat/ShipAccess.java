@@ -19,6 +19,8 @@
 package dev.loki.hillsphere.compat;
 
 import dev.loki.hillsphere.field.math.Vec3d;
+import dev.loki.hillsphere.field.shape.Deck;
+import net.minecraft.core.BlockPos;
 
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
@@ -45,5 +47,11 @@ public interface ShipAccess {
     default boolean turnsCamera(Entity entity) {
 
         return false;
+    }
+
+    /** The deck a deck-shaped core on a ship fills: the ship's hull; null when the block is not on a ship. */
+    default Deck hullOf(Level level, BlockPos pos) {
+
+        return null;
     }
 }

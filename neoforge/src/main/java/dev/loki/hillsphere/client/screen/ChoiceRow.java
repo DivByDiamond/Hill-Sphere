@@ -19,7 +19,6 @@
 package dev.loki.hillsphere.client.screen;
 
 import dev.loki.hillsphere.client.goggles.Palette;
-import dev.loki.hillsphere.field.control.RedstoneMode;
 
 import java.util.Locale;
 import java.util.function.Consumer;
@@ -30,16 +29,24 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
 
-/** The redstone mode: its name between two arrows, one pip per mode; the arrows, a click and the wheel all page through. */
-final class ModeRow extends AbstractWidget {
+/**
+ * One setting with a few named values, such as the redstone mode or the shape: the name of the value between two
+ * arrows, one pip per value; the arrows, a click and the wheel all page through.
+ */
+final class ChoiceRow<E extends Enum<E>> extends AbstractWidget {
 
-    private final Consumer<RedstoneMode> onPick;
+    private final E[] all;
+    private final String key;
+    private final Consumer<E> onPick;
     private final Supplier<int[]> ramp;
-    private RedstoneMode picked;
+    private E picked;
 
-    ModeRow(int x, int y, int width, int height, RedstoneMode picked, Supplier<int[]> ramp, Consumer<RedstoneMode> onPick) {
+    /** {@code key} is the language key of the setting; each value's name is under it, in lower case. */
+    ChoiceRow(int x, int y, int width, int height, E picked, String key, Supplier<int[]> ramp, Consumer<E> onPick) {
 
-        super(x, y, width, height, Component.translatable("hillsphere.core.mode"));
+        super(x, y, width, height, Component.translatable(key));
+        this.all = picked.getDeclaringClass().getEnumConstants();
+        this.key = key;
         this.picked = picked;
         this.ramp = ramp;
         this.onPick = onPick;
@@ -57,9 +64,9 @@ final class ModeRow extends AbstractWidget {
         final boolean hover = isHovered();
         graphics.drawString(font, "<", getX() + 7, middle, 0xFF000000 | (hover && left ? colours[Palette.LIGHT] : Palette.METAL[4]));
         graphics.drawString(font, ">", getX() + width - 13, middle, 0xFF000000 | (hover && !left ? colours[Palette.LIGHT] : Palette.METAL[4]));
-        graphics.drawCenteredString(font, Component.translatable("hillsphere.core.mode." + picked.name().toLowerCase(Locale.ROOT)),
+        graphics.drawCenteredString(font, Component.translatable(key + "." + picked.name().toLowerCase(Locale.ROOT)),
                 getX() + width / 2, middle, 0xFF000000 | Palette.PALE);
-        final int count = RedstoneMode.values().length;
+        final int count = all.length;
         final int start = getX() + (width - count * 6 + 2) / 2;
         for (int i = 0; i < count; i++) {
             graphics.fill(start + i * 6, getY() + height - 6, start + i * 6 + 4, getY() + height - 4,
@@ -69,7 +76,6 @@ final class ModeRow extends AbstractWidget {
 
     private void step(int by) {
 
-        final RedstoneMode[] all = RedstoneMode.values();
         picked = all[Math.floorMod(picked.ordinal() + by, all.length)];
         onPick.accept(picked);
     }

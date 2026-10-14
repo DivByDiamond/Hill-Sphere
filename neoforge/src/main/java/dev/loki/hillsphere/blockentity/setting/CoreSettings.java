@@ -26,6 +26,7 @@ import dev.loki.hillsphere.block.HillCoreBlock;
 import dev.loki.hillsphere.client.screen.CoreSettingsScreen;
 import dev.loki.hillsphere.field.Polarity;
 import dev.loki.hillsphere.field.control.RedstoneMode;
+import dev.loki.hillsphere.field.shape.Shape;
 
 import net.createmod.catnip.platform.CatnipServices;
 import net.minecraft.core.Direction;
@@ -38,7 +39,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.BlockHitResult;
 
 /**
- * The settings of a core: polarity, level and redstone mode. A right click on the panel face opens
+ * The settings of a core: polarity, level, redstone mode and shape. A right click on the panel face opens
  * {@link CoreSettingsScreen}, where polarity and mode are switches and the level a slider.
  *
  * <p>It derives from {@link ScrollValueBehaviour} on purpose: Create only draws the outline on the face
@@ -53,8 +54,9 @@ public class CoreSettings extends ScrollValueBehaviour {
     public static final double LEVEL_STEP = 0.05;
 
     private Polarity polarity = Polarity.ATTRACT;
-    private double level = 1;
+    private double level = 4;
     private RedstoneMode mode = RedstoneMode.OFF_ON_SIGNAL;
+    private Shape shape = Shape.SPHERE;
 
     public CoreSettings(Component label, SmartBlockEntity be, ValueBoxTransform slot) {
 
@@ -75,6 +77,21 @@ public class CoreSettings extends ScrollValueBehaviour {
     public RedstoneMode mode() {
 
         return mode;
+    }
+
+    public Shape shape() {
+
+        return shape;
+    }
+
+    /** Sets the shape of the field, as a player would with the screen. */
+    public void reshape(Shape newShape) {
+
+        if (newShape != shape) {
+            shape = newShape;
+            blockEntity.setChanged();
+            blockEntity.sendData();
+        }
     }
 
     /** Sets everything at once, as a player would with the screen; a level outside the range or off the step is brought in. */
@@ -137,6 +154,7 @@ public class CoreSettings extends ScrollValueBehaviour {
         nbt.putInt("HillPolarity", polarity.ordinal());
         nbt.putDouble("HillLevel", level);
         nbt.putInt("HillMode", mode.ordinal());
+        nbt.putInt("HillShape", shape.ordinal());
         super.write(nbt, registries, clientPacket);
     }
 
@@ -146,6 +164,7 @@ public class CoreSettings extends ScrollValueBehaviour {
         polarity = pick(Polarity.values(), nbt.getInt("HillPolarity"));
         level = clampLevel(nbt.getDouble("HillLevel"));
         mode = pick(RedstoneMode.values(), nbt.getInt("HillMode"));
+        shape = pick(Shape.values(), nbt.getInt("HillShape"));
         super.read(nbt, registries, clientPacket);
     }
 

@@ -153,7 +153,7 @@ public final class FieldIndex<K> {
     private boolean isSane(CoreField f) {
 
         final double limit = cellSize * COORDINATE_LIMIT_IN_CELLS;
-        return Double.isFinite(f.radius()) && f.radius() < limit
+        return Double.isFinite(f.reach()) && f.reach() < limit
                 && Math.abs(f.center().x()) < limit && Math.abs(f.center().y()) < limit
                 && Math.abs(f.center().z()) < limit;
     }
@@ -161,8 +161,9 @@ public final class FieldIndex<K> {
     /** The cells a core touches; empty if that would be more than {@value #MAX_CELLS_PER_AXIS} per axis. */
     private List<Cell> cellsOf(CoreField f) {
 
-        final Cell lo = cellOf(new Vec3d(f.center().x() - f.radius(), f.center().y() - f.radius(), f.center().z() - f.radius()));
-        final Cell hi = cellOf(new Vec3d(f.center().x() + f.radius(), f.center().y() + f.radius(), f.center().z() + f.radius()));
+        final double r = f.reach();
+        final Cell lo = cellOf(new Vec3d(f.center().x() - r, f.center().y() - r, f.center().z() - r));
+        final Cell hi = cellOf(new Vec3d(f.center().x() + r, f.center().y() + r, f.center().z() + r));
         if (span(lo.x, hi.x) > MAX_CELLS_PER_AXIS || span(lo.y, hi.y) > MAX_CELLS_PER_AXIS
                 || span(lo.z, hi.z) > MAX_CELLS_PER_AXIS) {
             return List.of();

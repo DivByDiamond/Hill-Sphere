@@ -66,7 +66,7 @@ public final class GogglesState {
         final double reach = GogglesConfig.RANGE.get() + LOOK_AHEAD;
         final Vec3d from = eye;
         near = ClientFields.field().cores().stream()
-                .filter(core -> core.center().sub(from).length() - core.radius() < reach)
+                .filter(core -> core.center().sub(from).length() - core.reach() < reach)
                 .sorted(Comparator.comparingDouble(core -> core.center().sub(from).length()))
                 .toList();
     }

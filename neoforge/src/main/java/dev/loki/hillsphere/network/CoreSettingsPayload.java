@@ -21,6 +21,7 @@ package dev.loki.hillsphere.network;
 import dev.loki.hillsphere.Constants;
 import dev.loki.hillsphere.field.Polarity;
 import dev.loki.hillsphere.field.control.RedstoneMode;
+import dev.loki.hillsphere.field.shape.Shape;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -30,7 +31,7 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 
 /** What a player set on the core screen, sent from the client to the server. */
-public record CoreSettingsPayload(BlockPos pos, Polarity polarity, double level, RedstoneMode mode)
+public record CoreSettingsPayload(BlockPos pos, Polarity polarity, double level, RedstoneMode mode, Shape shape)
         implements CustomPacketPayload {
 
     public static final Type<CoreSettingsPayload> TYPE =
@@ -41,6 +42,7 @@ public record CoreSettingsPayload(BlockPos pos, Polarity polarity, double level,
             ByteBufCodecs.idMapper(i -> Polarity.values()[i], Polarity::ordinal), CoreSettingsPayload::polarity,
             ByteBufCodecs.DOUBLE, CoreSettingsPayload::level,
             ByteBufCodecs.idMapper(i -> RedstoneMode.values()[i], RedstoneMode::ordinal), CoreSettingsPayload::mode,
+            ByteBufCodecs.idMapper(i -> Shape.values()[i], Shape::ordinal), CoreSettingsPayload::shape,
             CoreSettingsPayload::new);
 
     @Override

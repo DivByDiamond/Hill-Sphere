@@ -21,22 +21,42 @@ package dev.loki.hillsphere.field.resolve;
 import dev.loki.hillsphere.field.FieldTuning;
 import dev.loki.hillsphere.field.Polarity;
 import dev.loki.hillsphere.field.math.Vec3d;
+import dev.loki.hillsphere.field.shape.Deck;
 
 /**
  * Current state of one core as the resolver sees it.
  *
  * @param center core position
- * @param radius current radius in blocks (0 means the field is off)
+ * @param radius current radius in blocks (0 means the field is off); a deck field uses it only to be on or off
  * @param strength current pull in multiples of vanilla gravity; for {@link Polarity#LEVITATE}
  *     the share of gravity the core cancels (1 cancels it fully)
  * @param polarity what the core does
+ * @param deck the box of a deck field, or {@code null} for a sphere around the core
  */
-public record CoreField(Vec3d center, double radius, double strength, Polarity polarity) {
+public record CoreField(Vec3d center, double radius, double strength, Polarity polarity, Deck deck) {
 
-    /** Pull direction at a point (unit vector), or {@link Vec3d#ZERO} at the exact center. */
+    /** A sphere field. */
+    public CoreField(Vec3d center, double radius, double strength, Polarity polarity) {
+
+        this(center, radius, strength, polarity, null);
+    }
+
+    /** The same core with its field in the given box instead of a sphere. */
+    public CoreField withDeck(Deck box) {
+
+        return new CoreField(center, radius, strength, polarity, box);
+    }
+
+    /** How far from the core its field can reach at all, fading edge included. */
+    public double reach() {
+
+        return deck == null ? radius : Math.max(radius, deck.reachFrom(center));
+    }
+
+    /** Pull direction at a point (unit vector), or {@link Vec3d#ZERO} at the exact center of a sphere. */
     Vec3d direction(Vec3d point) {
 
-        final Vec3d toCore = center.sub(point).normalized();
+        final Vec3d toCore = deck == null ? center.sub(point).normalized() : deck.yAxis().scale(-1);
         return polarity == Polarity.REPEL ? toCore.scale(-1) : toCore;
     }
 
@@ -53,11 +73,11 @@ public record CoreField(Vec3d center, double radius, double strength, Polarity p
     }
 
     /** Falloff factor in the point, 0 when it is outside the field. */
-    double fade(FieldTuning tuning, Vec3d point) {
+    public double fade(FieldTuning tuning, Vec3d point) {
 
         if (radius <= 0) {
             return 0;
         }
-        return tuning.fade(center.sub(point).length() / radius);
+        return deck == null ? tuning.fade(center.sub(point).length() / radius) : deck.fade(point);
     }
 }

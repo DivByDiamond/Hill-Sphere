@@ -76,16 +76,20 @@ public final class BodyForces {
     }
 
     /**
-     * A core only holds up what its field is big enough for: a share of the weight no larger than the mass it can carry
+     * A core only holds up what its field is big enough for: its level, scaled by how big the field is, and no more than the mass it can carry
      * (per block of radius) over the body's mass. A heavy ship needs a fast core, or several; a light one is held fully.
      */
     private <B> double held(double lift, CoreField core, Body<B> body) {
 
-        final double carry = tuning.liftMassPerRadius();
-        if (lift <= 0 || carry <= 0 || body.mass() <= 0) {
+        if (lift <= 0) {
             return lift;
         }
-        return Math.min(lift, carry * core.radius() / body.mass());
+        final double sized = lift * tuning.radiusLift(core.radius());
+        final double carry = tuning.liftMassPerRadius();
+        if (carry <= 0 || body.mass() <= 0) {
+            return sized;
+        }
+        return Math.min(sized, carry * core.radius() / body.mass());
     }
 
     /** A levitation core sits in its own field, so it lifts what carries it by its whole level, as far as the air allows. */

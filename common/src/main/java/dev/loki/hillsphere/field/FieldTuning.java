@@ -55,6 +55,9 @@ public record FieldTuning(
         double liftZeroY,
         double liftMassPerRadius) {
 
+    /** Share of its levitation the smallest field still gives. */
+    public static final double LIFT_AT_MIN_RADIUS = 0.2;
+
     public static final FieldTuning DEFAULT = new FieldTuning(
             8, 256, 2, 32, 0.6, List.of(0.25, 0.5, 0.75, 1.0, 1.5, 2.0), List.of(0.2, 0.4, 0.6, 0.8, 0.9, 1.0), 4, 1.0, 1.25, 30, 64, 256, 40);
 
@@ -98,6 +101,17 @@ public record FieldTuning(
             return 0;
         }
         return minRadius + (maxRadius - minRadius) * Math.min(speed, maxRpm) / maxRpm;
+    }
+
+    /**
+     * How much of its levitation a field of this radius gives: {@link #LIFT_AT_MIN_RADIUS} at the smallest field, running up in a
+     * straight line to all of it at the largest, so a faster core always lifts a light ship harder, not only a heavy one.
+     */
+    public double radiusLift(double radius) {
+
+        final double span = maxRadius - minRadius;
+        final double share = span <= 0 ? 1 : Math.max(0, Math.min(1, (radius - minRadius) / span));
+        return LIFT_AT_MIN_RADIUS + (1 - LIFT_AT_MIN_RADIUS) * share;
     }
 
     /** Pull for a strength level: 0 is nothing, 1 the first entry, fractions run in a straight line between entries. */

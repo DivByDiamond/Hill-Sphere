@@ -19,9 +19,11 @@
 package dev.loki.hillsphere.world;
 
 import dev.loki.hillsphere.config.DimensionScale;
+import dev.loki.hillsphere.config.HillSphereConfig;
 import dev.loki.hillsphere.field.GravityField;
 import dev.loki.hillsphere.field.math.Vec3d;
 import dev.loki.hillsphere.field.resolve.Gravity;
+import dev.loki.hillsphere.field.view.FieldProbe;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
@@ -55,6 +57,17 @@ public final class FieldLookup {
         final Vec3 c = entity.getBoundingBox().getCenter();
         final Gravity planet = field.planetAt(new Vec3d(c.x, c.y, c.z));
         return Gravity.VANILLA.equals(planet) ? planet : new Gravity(planet.direction(), planet.strength() * DimensionScale.of(entity.level()));
+    }
+
+    /** How deep inside the cores' fields the entity is: 1 in the middle, 0 at the edge and outside. */
+    public static double depthAt(Entity entity) {
+
+        final GravityField<BlockPos> field = fieldOf(entity.level());
+        if (field == null) {
+            return 0;
+        }
+        final Vec3 c = entity.getBoundingBox().getCenter();
+        return FieldProbe.at(HillSphereConfig.tuning(), field.cores(), new Vec3d(c.x, c.y, c.z)).influence();
     }
 
     private static GravityField<BlockPos> fieldOf(Level level) {

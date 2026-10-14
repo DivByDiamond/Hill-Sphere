@@ -20,6 +20,8 @@ package dev.loki.hillsphere.compat;
 
 import dev.loki.hillsphere.compat.sable.SableShips;
 import dev.loki.hillsphere.field.math.Vec3d;
+import dev.loki.hillsphere.field.shape.Deck;
+import net.minecraft.core.BlockPos;
 
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
@@ -59,5 +61,11 @@ public final class Ships {
     public static boolean turnsCamera(Entity entity) {
 
         return access.turnsCamera(entity);
+    }
+
+    /** @see ShipAccess#hullOf */
+    public static Deck hullOf(Level level, BlockPos pos) {
+
+        return access.hullOf(level, pos);
     }
 }

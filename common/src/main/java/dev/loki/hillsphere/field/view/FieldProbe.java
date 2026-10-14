@@ -60,6 +60,6 @@ public record FieldProbe(Polarity polarity, double influence) {
     /** The core's falloff in the point: 1 on the plateau, 0 outside. */
     public static double fade(FieldTuning tuning, CoreField core, Vec3d point) {
 
-        return core.radius() <= 0 ? 0 : tuning.fade(core.center().sub(point).length() / core.radius());
+        return core.fade(tuning, point);
     }
 }
