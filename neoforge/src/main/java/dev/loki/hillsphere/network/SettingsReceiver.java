@@ -42,6 +42,7 @@ final class SettingsReceiver {
             if (context.player() instanceof ServerPlayer player && reaches(player, payload.pos())
                     && player.level().getBlockEntity(payload.pos()) instanceof HillCoreBlockEntity core) {
                 core.settings().configure(payload.polarity(), payload.level(), payload.mode());
+                core.settings().reshape(payload.shape());
             }
         });
     }

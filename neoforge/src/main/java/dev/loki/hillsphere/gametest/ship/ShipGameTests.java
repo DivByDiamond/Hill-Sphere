@@ -146,7 +146,7 @@ public final class ShipGameTests {
         if (!sable(helper)) {
             return;
         }
-        CoreGameTests.powered(helper, FLOOR_MOTOR, FLOOR_CORE, 128, Polarity.LEVITATE, 6, RedstoneMode.MANUAL);
+        CoreGameTests.powered(helper, FLOOR_MOTOR, FLOOR_CORE, 256, Polarity.LEVITATE, 6, RedstoneMode.MANUAL);
         helper.runAfterDelay(60, () -> {
             helper.setBlock(OVER, Blocks.STONE);
             final ShipRig ship = ShipRig.assemble(helper, OVER);

@@ -1,4 +1,5 @@
 {
+  "itemGroup.hillsphere": "Hill Sphere",
   "block.hillsphere.hill_core": "Hill Core",
   "block.hillsphere.hill_plate": "Hill Plate",
   "block.hillsphere.deepslate_gravite_ore": "Deepslate Gravite Ore",
@@ -22,6 +23,9 @@
   "hillsphere.readout.redstone": "off by redstone",
   "hillsphere.readout.overstressed": "overstressed",
   "hillsphere.core.settings": "Hill core",
+  "hillsphere.core.shape": "Shape",
+  "hillsphere.core.shape.sphere": "Sphere",
+  "hillsphere.core.shape.deck": "Hull",
   "hillsphere.core.mode": "Redstone",
   "hillsphere.core.mode.manual": "Manual",
   "hillsphere.core.mode.off_on_signal": "Off on signal",

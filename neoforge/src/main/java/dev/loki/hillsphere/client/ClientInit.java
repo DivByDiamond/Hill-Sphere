@@ -21,6 +21,7 @@ package dev.loki.hillsphere.client;
 import com.simibubi.create.content.kinetics.base.SingleAxisRotatingVisual;
 import dev.engine_room.flywheel.lib.visualization.SimpleBlockEntityVisualizer;
 import dev.loki.hillsphere.Constants;
+import dev.loki.hillsphere.client.air.AirControls;
 import dev.loki.hillsphere.client.goggles.GogglesClient;
 import dev.loki.hillsphere.registry.ModBlockEntities;
 import dev.loki.hillsphere.world.ClientFields;
@@ -48,7 +49,7 @@ public final class ClientInit {
         modBus.addListener(ClientInit::onClientSetup);
         modBus.addListener(ClientInit::registerRenderers);
         modBus.addListener(ClientInit::registerFluidTextures);
-        NeoForge.EVENT_BUS.addListener(ClientTickEvent.Post.class, ZeroGravityControls::tick);
+        NeoForge.EVENT_BUS.addListener(ClientTickEvent.Post.class, AirControls::tick);
         GogglesClient.init(modBus);
         NeoForge.EVENT_BUS.addListener(ClientPlayerNetworkEvent.LoggingOut.class, e -> ClientFields.clear());
     }

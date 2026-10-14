@@ -21,6 +21,7 @@ package dev.loki.hillsphere.gametest;
 import dev.loki.hillsphere.Constants;
 import dev.loki.hillsphere.entity.LivingGravity;
 import dev.loki.hillsphere.field.Polarity;
+import dev.loki.hillsphere.field.frame.GravityFrame;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
@@ -94,6 +95,26 @@ public final class LivingGameTests {
                 helper.assertTrue(pig.getX() < start.x - 1.0, "a pig beside an attracting core should fall toward it, " + where);
                 helper.assertTrue(Math.abs(pig.getY() - start.y) < 1.6, "it should not fall down, " + where);
                 helper.assertTrue(pig.onGround(), "it should stand against the core, " + where);
+                helper.succeed();
+            });
+        });
+    }
+
+    /**
+     * A pig just off the top edge of the core, where the pull is 50 degrees from straight down, has the core's side
+     * face right under its feet once turned: it turns onto that face at once instead of falling past it.
+     */
+    @GameTest(template = "empty", timeoutTicks = 400, batch = "aMobOffAnEdgeTurnsOntoTheFaceBelowIt")
+    public static void aMobOffAnEdgeTurnsOntoTheFaceBelowIt(GameTestHelper helper) {
+
+        CoreGameTests.liftCore(helper, Polarity.ATTRACT);
+        helper.runAfterDelay(100, () -> {
+            final Vec3 start = helper.absoluteVec(new Vec3(3.55, 3.93, 3.5));
+            final Mob pig = helper.spawnWithNoFreeWill(EntityType.PIG, new Vec3(3.55, 3.93, 3.5));
+            helper.runAfterDelay(4, () -> {
+                final String where = "from " + start + " to " + pig.position() + " frame " + LivingGravity.frameOf(pig);
+                helper.assertTrue(LivingGravity.frameOf(pig) == GravityFrame.WEST, "the pig should stand on the core's east face, " + where);
+                helper.assertTrue(pig.getBoundingBox().minY > start.y - 0.3, "it should not have fallen past the edge, " + where);
                 helper.succeed();
             });
         });

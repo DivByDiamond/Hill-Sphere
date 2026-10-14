@@ -30,6 +30,9 @@ import dev.loki.hillsphere.field.CoreDriver;
 import dev.loki.hillsphere.field.Polarity;
 import dev.loki.hillsphere.field.control.Control;
 import dev.loki.hillsphere.field.math.Vec3d;
+import dev.loki.hillsphere.field.resolve.CoreField;
+import dev.loki.hillsphere.field.shape.Deck;
+import dev.loki.hillsphere.field.shape.Shape;
 import dev.loki.hillsphere.registry.ModBlockEntities;
 import dev.loki.hillsphere.world.LevelFields;
 import dev.loki.hillsphere.world.WorldFields;
@@ -43,7 +46,8 @@ import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * Turns the rotation a core receives and its settings into a gravity field. The field is always
- * centred where the core is in the world, so a core on a ship takes its field along with the ship.
+ * centred where the core is in the world, so a core on a ship takes its field along with the ship; a deck-shaped
+ * field on a ship fills the ship's whole hull.
  */
 public class HillCoreBlockEntity extends KineticBlockEntity {
 
@@ -84,8 +88,9 @@ public class HillCoreBlockEntity extends KineticBlockEntity {
         control = settings.mode().apply(settings.polarity(), settings.level(), signal);
         final BlockPos p = worldPosition;
         final Vec3d center = Ships.toWorld(level, new Vec3d(p.getX() + 0.5, p.getY() + 0.5, p.getZ() + 0.5));
-        WorldFields.of(level).update(p, driver.step(HillSphereConfig.tuning(), center, control.polarity(), control.level(),
-                Math.abs(getSpeed()), !isOverStressed()));
+        final CoreField field = driver.step(HillSphereConfig.tuning(), center, control.polarity(), control.level(),
+                Math.abs(getSpeed()), !isOverStressed());
+        WorldFields.of(level).update(p, settings.shape() == Shape.DECK ? field.withDeck(deck(center, field.radius())) : field);
         showState();
     }
 
@@ -98,6 +103,13 @@ public class HillCoreBlockEntity extends KineticBlockEntity {
             fields.remove(worldPosition);
         }
         super.invalidate();
+    }
+
+    /** A deck fills the hull of the ship the core is on, or a cube as big as the field's radius on the ground. */
+    private Deck deck(Vec3d center, double radius) {
+
+        final Deck hull = Ships.hullOf(level, worldPosition);
+        return hull != null ? hull : Deck.cube(center, radius);
     }
 
     public CoreSettings settings() {

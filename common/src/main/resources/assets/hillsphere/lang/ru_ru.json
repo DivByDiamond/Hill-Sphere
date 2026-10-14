@@ -1,4 +1,5 @@
 {
+  "itemGroup.hillsphere": "Hill Sphere",
   "block.hillsphere.hill_core": "Гравитационное ядро",
   "block.hillsphere.hill_plate": "Плита ядра",
   "block.hillsphere.deepslate_gravite_ore": "Глубинная гравитовая руда",
@@ -22,6 +23,9 @@
   "hillsphere.readout.redstone": "выключено редстоуном",
   "hillsphere.readout.overstressed": "перегрузка",
   "hillsphere.core.settings": "Ядро Хилла",
+  "hillsphere.core.shape": "Форма",
+  "hillsphere.core.shape.sphere": "Шар",
+  "hillsphere.core.shape.deck": "Корпус",
   "hillsphere.core.mode": "Редстоун",
   "hillsphere.core.mode.manual": "Ручной",
   "hillsphere.core.mode.off_on_signal": "Выкл. по сигналу",

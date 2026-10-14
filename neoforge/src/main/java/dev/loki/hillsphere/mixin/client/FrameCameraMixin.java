@@ -46,8 +46,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * the eye is the vanilla one rotated about the feet by an eased quarter turn, and the rotation is
  * that same turn composed onto vanilla's. The easing runs at a constant quarter turn per half
  * second, so a frame switch under the camera is a sweep instead of a hard cut; when the frame
- * turns vanilla again the turn eases back to nothing rather than snapping. In first person the eye
- * is pulled back along the frame's "up" until it is in clear air, so a wall beside the head cannot
+ * turns vanilla again the turn eases back to nothing rather than snapping. The eye swings with the
+ * same turn about the middle of the body, which a frame switch leaves where it is. In first person
+ * it is pulled back toward that middle until it is in clear air, so a wall beside the head cannot
  * swallow the view. While a ship turns the camera of a seated rider, the ship's turn wins and this
  * one eases back to nothing, so the two never stack.
  */
@@ -110,9 +111,9 @@ public abstract class FrameCameraMixin {
     }
 
     /**
-     * The eye of a turned body is along its "up", not straight above the feet in world Y. It sits
-     * there at once, like the body; only the view eases, since an eye swept along the arc would
-     * pass through the block the body stands on.
+     * The eye of a turned body is along its "up", not straight above the feet in world Y. It swings
+     * there with the eased turn about the middle of the body, and the clear-air check keeps the
+     * arc out of the block the body stands on.
      */
     @WrapOperation(
             method = "setup",
@@ -122,15 +123,18 @@ public abstract class FrameCameraMixin {
             boolean detached, boolean thirdPersonReverse, float partialTick) {
 
         final GravityFrame frame = this.hillsphereFrame();
-        if (frame.isVanilla() || !this.hillsphereShouldShow(frame, false)) {
+        if (!this.hillsphereShouldShow(frame, false)) {
             original.call(camera, x, y, z);
             return;
         }
         final float eyeH = Mth.lerp(partialTick, this.eyeHeightOld, this.eyeHeight);
         final Vec3 feet = new Vec3(x, y - eyeH, z);
-        final Vector3f rotated = FrameEyeMath.turnOf(frame).transform(new Vector3f(0.0f, eyeH, 0.0f));
-        final Vec3 desired = new Vec3(feet.x + rotated.x, feet.y + rotated.y, feet.z + rotated.z);
-        final Vec3 eye = detached ? desired : FrameEyeMath.clearEye(level, this.entity, feet, desired);
+        final float half = this.entity.getBbHeight() / 2.0f;
+        final Vector3f toMiddle = FrameEyeMath.turnOf(frame).transform(new Vector3f(0.0f, half, 0.0f));
+        final Vec3 middle = new Vec3(feet.x + toMiddle.x, feet.y + toMiddle.y, feet.z + toMiddle.z);
+        final Vector3f swung = HILLSPHERE_SHOWN.transform(new Vector3f(0.0f, eyeH - half, 0.0f));
+        final Vec3 desired = new Vec3(middle.x + swung.x, middle.y + swung.y, middle.z + swung.z);
+        final Vec3 eye = detached ? desired : FrameEyeMath.clearEye(level, this.entity, middle, desired);
         original.call(camera, eye.x, eye.y, eye.z);
     }
 

@@ -55,8 +55,8 @@ public final class ShellLayer implements WorldLayer {
     @Override
     public void tick(GogglesState state) {
 
-        final List<CoreField> near = state.near();
-        shells = near.subList(0, Math.min(near.size(), GogglesConfig.MAX_SHELLS.get()));
+        final List<CoreField> spheres = state.near().stream().filter(core -> core.deck() == null).toList();
+        shells = spheres.subList(0, Math.min(spheres.size(), GogglesConfig.MAX_SHELLS.get()));
         ease.tick(shells);
         final List<Boundary> found = new ArrayList<>();
         for (int i = 0; i < shells.size(); i++) {

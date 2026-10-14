@@ -43,7 +43,7 @@ class BodyForcesTest {
 
     private static Mounted<String> core(String carrier, Polarity polarity, double strength) {
 
-        return new Mounted<>(new CoreField(Vec3d.ZERO, 20, strength, polarity), carrier);
+        return new Mounted<>(new CoreField(Vec3d.ZERO, 32, strength, polarity), carrier);
     }
 
     private static void assertVec(Vec3d expected, Vec3d actual) {
@@ -68,7 +68,7 @@ class BodyForcesTest {
 
         final Mounted<String> ground = core(null, Polarity.LEVITATE, 1);
         assertVec(new Vec3d(0, 100, 0), F.of(List.of(body("a", 5, 10)), List.of(ground), 1).get(0).force());
-        assertTrue(F.of(List.of(body("a", 25, 10)), List.of(ground), 1).isEmpty());
+        assertTrue(F.of(List.of(body("a", 40, 10)), List.of(ground), 1).isEmpty());
     }
 
     @Test
@@ -131,11 +131,22 @@ class BodyForcesTest {
     }
 
     @Test
+    void aSmallerFieldLiftsEvenALightShipLess() {
+
+        final Body<String> light = body("a", 0, 10);
+        final double small = F.of(List.of(light), List.of(new Mounted<>(new CoreField(Vec3d.ZERO, 2, 1, Polarity.LEVITATE), "a")), 1)
+                .get(0).force().y();
+        final double big = F.of(List.of(light), List.of(core("a", Polarity.LEVITATE, 1)), 1).get(0).force().y();
+        assertEquals(20, small, EPS);
+        assertEquals(100, big, EPS);
+    }
+
+    @Test
     void aHeavyShipIsHeldOnlyAsFarAsTheCoreCanCarry() {
 
-        // radius 20 carries 40 * 20 = 800; a ship of 2000 gets 40 percent of its weight cancelled, however high the level
+        // radius 32 carries 40 * 32 = 1280; a ship of 2000 gets 64 percent of its weight cancelled, however high the level
         final Body<String> giant = new Body<>("a", new Vec3d(0, 0, 0), 2000, G);
-        assertVec(new Vec3d(0, 8000, 0), F.of(List.of(giant), List.of(core("a", Polarity.LEVITATE, 1)), 1).get(0).force());
+        assertVec(new Vec3d(0, 12800, 0), F.of(List.of(giant), List.of(core("a", Polarity.LEVITATE, 1)), 1).get(0).force());
     }
 
     @Test

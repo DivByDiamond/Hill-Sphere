@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+- Deck shape for the Hill Core: one "down" all over a box instead of a sphere. On a Sable ship the
+  box is the whole ship, turned with it, so a ship of any shape has a floor; on the ground it is a cube
+- "Down" turns toward a floor under the feet: step off the edge of a small planet and you land on
+  its side at once, walk up to a wall the field leans toward and you stand on it; a hop no longer
+  turns you
+- Air thrust in a field only in free flight (no floor within 1.5 blocks) and along the look; normal
+  jumps are vanilla again
+
 ## 0.1.0-beta.1
 
 First public test build. Expect rough edges, especially in gravity on walls and ceilings

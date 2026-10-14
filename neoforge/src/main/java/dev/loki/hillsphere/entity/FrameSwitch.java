@@ -18,6 +18,8 @@
  */
 package dev.loki.hillsphere.entity;
 
+import dev.loki.hillsphere.entity.probe.SupportProbe;
+import dev.loki.hillsphere.field.frame.FrameChooser;
 import dev.loki.hillsphere.field.frame.GravityFrame;
 import dev.loki.hillsphere.field.math.Vec3d;
 import dev.loki.hillsphere.field.resolve.Gravity;
@@ -33,63 +35,30 @@ import org.joml.Vector3f;
 /** Decides when a living thing's "down" follows the pull, and turns its body without pushing it into blocks. */
 public final class FrameSwitch {
 
-    /** In the air a frame is kept while the pull is within 60 degrees of its "down". */
-    private static final double KEEP_IN_AIR = 0.5;
-
-    /** On the ground it is kept until the pull points well above the horizon, so a platform stays a floor beside the core. */
-    private static final double KEEP_ON_GROUND = -0.4;
-
-    /** Ticks a new direction must hold before the frame follows it. */
-    private static final int DWELL_TICKS = 4;
-
-    /**
-     * How much better in the pull a new frame must be than the sitting candidate to take its place,
-     * in dots. Without it a pull that wobbles across a 45-degree boundary flips the candidate every
-     * tick, the dwell never finishes, and near a small core - where one block of walking swings the
-     * pull hard - the player is dragged about in a frame that is never switched.
-     */
-    private static final double CANDIDATE_MARGIN = 0.15;
-
     /** How far the body is lifted along the new "up" while looking for room: an eighth of a block at a time. */
     private static final double LIFT = 0.125;
 
-    private GravityFrame candidate = GravityFrame.DOWN;
-    private int dwell;
+    private final FrameChooser chooser = new FrameChooser();
 
-    /** The frame the entity should be in now, given the pull; {@code current} while a new direction has not held long enough. */
+    /** The frame the entity should be in now, given the pull; {@code current} while no turn is due (see {@link FrameChooser}). */
     public GravityFrame next(Entity self, GravityFrame current, Gravity planet) {
 
         if (Gravity.VANILLA.equals(planet)) {
             return GravityFrame.DOWN;
         }
-        final Vec3d pull = planet.direction();
-        final GravityFrame wanted = GravityFrame.of(pull);
-        if (wanted == current || pull.dot(current.toReal(Vec3d.DOWN)) > (self.onGround() ? KEEP_ON_GROUND : KEEP_IN_AIR)) {
-            dwell = 0;
-            return current;
-        }
-        if (wanted == candidate) {
-            dwell++;
-        } else if (pull.dot(wanted.toReal(Vec3d.DOWN)) > pull.dot(candidate.toReal(Vec3d.DOWN)) + CANDIDATE_MARGIN) {
-            candidate = wanted;
-            dwell = 1;
-        }
-        return dwell >= DWELL_TICKS ? candidate : current;
+        return chooser.next(current, planet.direction(), frame -> SupportProbe.floorBelow(self, frame, FrameChooser.REACH));
     }
 
     /** Turns the body around its middle, and only if the turned body has room; false means wait and try again. */
     public boolean turn(Entity self, GravityFrame from, GravityFrame to) {
 
-        final Vec3 center = self.getBoundingBox().getCenter();
         final EntityDimensions size = self.getDimensions(self.getPose());
-        final Vec3d off = to.toReal(new Vec3d(0, -size.height() / 2, 0));
-        final Vec3 start = new Vec3(center.x + off.x(), center.y + off.y(), center.z + off.z());
-        final Vec3 feet = fitting(self, to, size, start);
+        final Vec3 feet = fitting(self, to, size, SupportProbe.turnedFeet(self, to));
         if (feet == null) {
             return false;
         }
         dropSpeedAlong(self, from.toReal(Vec3d.DOWN));
-        dwell = 0;
+        chooser.reset();
         self.setPos(feet);
         turnLook(self, from, to);
         return true;

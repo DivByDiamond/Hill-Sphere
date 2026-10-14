@@ -26,6 +26,7 @@ import dev.loki.hillsphere.world.WorldFields;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -40,7 +41,7 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 /** Sends the cores that changed to players, and applies them on the client. */
 public final class FieldNetwork {
 
-    private static final String PROTOCOL = "3";
+    private static final String PROTOCOL = "4";
 
     private FieldNetwork() {
     }
@@ -85,7 +86,8 @@ public final class FieldNetwork {
 
         final List<FieldSyncPayload.Entry> entries = cores.entrySet().stream()
                 .map(e -> new FieldSyncPayload.Entry(e.getKey(), e.getValue().center(), (float) e.getValue().radius(),
-                        (float) e.getValue().strength(), e.getValue().polarity()))
+                        (float) e.getValue().strength(), e.getValue().polarity(),
+                        Optional.ofNullable(e.getValue().deck())))
                 .toList();
         return new FieldSyncPayload(replace, entries);
     }
@@ -94,7 +96,7 @@ public final class FieldNetwork {
 
         final Map<BlockPos, CoreField> cores = new HashMap<>();
         for (final FieldSyncPayload.Entry e : payload.entries()) {
-            cores.put(e.pos(), new CoreField(e.center(), e.radius(), e.strength(), e.polarity()));
+            cores.put(e.pos(), new CoreField(e.center(), e.radius(), e.strength(), e.polarity(), e.deck().orElse(null)));
         }
         context.enqueueWork(() -> ClientFields.apply(payload.replace(), cores));
     }

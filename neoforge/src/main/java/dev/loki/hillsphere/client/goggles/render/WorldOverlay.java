@@ -31,7 +31,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 
 /**
- * Draws the world layers of the current mode after particles, all in world coordinates (a player standing on a
+ * Draws the world layers of the current mode after weather (so clouds do not paint over them), all in world coordinates (a player standing on a
  * wall sees the same picture as one standing on the floor). Uses its own buffers, so lines and quads can be
  * mixed freely, and caps the shapes drawn in one frame.
  */
@@ -64,7 +64,7 @@ public final class WorldOverlay {
 
     public void onRender(RenderLevelStageEvent event) {
 
-        if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_PARTICLES || !state.worn()) {
+        if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_WEATHER || !state.worn()) {
             return;
         }
         final float partialTick = event.getPartialTick().getGameTimeDeltaPartialTick(false);
