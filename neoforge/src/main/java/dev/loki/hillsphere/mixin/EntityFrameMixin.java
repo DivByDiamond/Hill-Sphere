@@ -100,6 +100,10 @@ public abstract class EntityFrameMixin implements FrameState {
                     self.level().isClientSide ? "C" : "S");
             if (turned) {
                 hillsphereFrame = next;
+                // The turn has set the position while the old frame was still in place, so the box is the old body
+                // moved to the new feet: half a body into the new floor. Collisions skip blocks a box already overlaps,
+                // and Sable carries the body by that box's anchor, so it sank through the floor.
+                self.setBoundingBox(makeBoundingBox());
             }
         }
     }
