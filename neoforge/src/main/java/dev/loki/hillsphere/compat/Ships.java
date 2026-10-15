@@ -25,6 +25,7 @@ import net.minecraft.core.BlockPos;
 
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
 import net.neoforged.fml.ModList;
 
 /**
@@ -61,6 +62,12 @@ public final class Ships {
     public static boolean turnsCamera(Entity entity) {
 
         return access.turnsCamera(entity);
+    }
+
+    /** @see ShipAccess#collides */
+    public static boolean collides(Level level, AABB box) {
+
+        return access.collides(level, box);
     }
 
     /** @see ShipAccess#hullOf */
