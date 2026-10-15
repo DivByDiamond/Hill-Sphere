@@ -23,10 +23,12 @@ import dev.loki.hillsphere.field.math.Vec3d;
 import dev.loki.hillsphere.field.shape.Deck;
 import net.minecraft.core.BlockPos;
 import dev.ryanhcode.sable.Sable;
+import dev.ryanhcode.sable.mixinhelpers.CanFallAtleastHelper;
 import dev.ryanhcode.sable.neoforge.event.ForgeSablePrePhysicsTickEvent;
 
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.common.NeoForge;
 
@@ -50,6 +52,13 @@ public final class SableShips implements ShipAccess {
 
         final Vec3 world = Sable.HELPER.projectOutOfSubLevel(level, new Vec3(point.x(), point.y(), point.z()));
         return new Vec3d(world.x, world.y, world.z);
+    }
+
+    /** Sable's own test of whether a body may fall into a box, which looks at the blocks of every ship near it. */
+    @Override
+    public boolean collides(Level level, AABB box) {
+
+        return CanFallAtleastHelper.canFallAtleastWithSubLevels(level, box) != null;
     }
 
     @Override

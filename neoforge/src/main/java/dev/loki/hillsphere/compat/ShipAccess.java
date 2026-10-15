@@ -24,6 +24,7 @@ import net.minecraft.core.BlockPos;
 
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
 
 /** What the mod asks of a ship mod. The defaults are a world without ships. */
 public interface ShipAccess {
@@ -45,6 +46,12 @@ public interface ShipAccess {
 
     /** True while the ship mod turns this entity's camera with the ship it rides. */
     default boolean turnsCamera(Entity entity) {
+
+        return false;
+    }
+
+    /** True when a block of a ship overlaps the box; the world's own blocks are not asked. */
+    default boolean collides(Level level, AABB box) {
 
         return false;
     }

@@ -118,13 +118,13 @@ public final class FrameSwitch {
      */
     private static Vec3 fitting(Entity self, GravityFrame to, EntityDimensions size, Vec3 start) {
 
-        if (self.level().noCollision(self, LivingGravity.box(to, start, size))) {
+        if (SupportProbe.clear(self, LivingGravity.box(to, start, size))) {
             return start;
         }
         final Vec3d up = to.toReal(new Vec3d(0, 1, 0));
         for (double lifted = LIFT; lifted <= size.height() + LIFT; lifted += LIFT) {
             final Vec3 there = new Vec3(start.x + up.x() * lifted, start.y + up.y() * lifted, start.z + up.z() * lifted);
-            if (self.level().noCollision(self, LivingGravity.box(to, there, size))) {
+            if (SupportProbe.clear(self, LivingGravity.box(to, there, size))) {
                 return there;
             }
         }

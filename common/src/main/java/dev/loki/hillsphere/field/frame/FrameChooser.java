@@ -27,7 +27,9 @@ import java.util.function.ToDoubleFunction;
  * off the edge of a small planet lands on its side at once, and one that walks up to a wall the field leans
  * toward stands on it. A body standing (or hopping) on its floor keeps it until the pull is well above the
  * horizon. With nothing to stand on either way, the frame follows the pull once it is a little past the halfway
- * line between two frames.
+ * line between two frames. Turning straight back into the frame just left, while standing on the new floor, takes a
+ * pull well past halfway: the turn itself moves the body (it settles onto the new floor, and on a stepped ball the
+ * next step is a block away), which swings the pull back by more than the small lean that started the turn.
  */
 public final class FrameChooser {
 
@@ -40,6 +42,9 @@ public final class FrameChooser {
     /** How much better (in dot) the pull must fit a frame with a floor before it is taken: just past halfway. */
     static final double LEAN = 0.05;
 
+    /** How much better (in dot) the pull must fit the frame just left, while standing, to turn back: about 14 degrees past halfway. */
+    static final double BACK = 0.35;
+
     /** How much better the pull must fit a frame with no floor near: about six degrees past halfway. */
     static final double FREE_MARGIN = 0.15;
 
@@ -50,6 +55,7 @@ public final class FrameChooser {
     static final int FREE_DWELL = 3;
 
     private GravityFrame candidate = GravityFrame.DOWN;
+    private GravityFrame left;
     private int dwell;
 
     /**
@@ -69,10 +75,12 @@ public final class FrameChooser {
         }
         final double now = pull.dot(current.toReal(Vec3d.DOWN));
         final double there = pull.dot(wanted.toReal(Vec3d.DOWN));
-        if (there > now + LEAN && floor.applyAsDouble(wanted) <= REACH) {
+        final boolean standing = floor.applyAsDouble(current) <= REACH;
+        final double lean = wanted == left && standing ? BACK : LEAN;
+        if (there > now + lean && floor.applyAsDouble(wanted) <= REACH) {
             return toward(wanted, FLOOR_DWELL, current);
         }
-        if (now > KEEP_ON_GROUND && floor.applyAsDouble(current) <= REACH) {
+        if (now > KEEP_ON_GROUND && standing) {
             return stay(current);
         }
         if (there > now + FREE_MARGIN) {
@@ -100,6 +108,10 @@ public final class FrameChooser {
             dwell = 0;
         }
         dwell++;
-        return dwell >= ticks ? wanted : current;
+        if (dwell < ticks) {
+            return current;
+        }
+        left = current;
+        return wanted;
     }
 }

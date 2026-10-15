@@ -18,6 +18,7 @@
  */
 package dev.loki.hillsphere.entity.probe;
 
+import dev.loki.hillsphere.compat.Ships;
 import dev.loki.hillsphere.entity.LivingGravity;
 import dev.loki.hillsphere.field.frame.GravityFrame;
 import dev.loki.hillsphere.field.math.Vec3d;
@@ -56,10 +57,16 @@ public final class SupportProbe {
         final AABB box = LivingGravity.box(frame, turnedFeet(self, frame), self.getDimensions(self.getPose())).deflate(SKIN);
         final Vec3d down = frame.toReal(Vec3d.DOWN);
         for (double d = 0; d <= reach; d += STEP) {
-            if (!self.level().noCollision(self, box.move(down.x() * d, down.y() * d, down.z() * d))) {
+            if (!clear(self, box.move(down.x() * d, down.y() * d, down.z() * d))) {
                 return d;
             }
         }
         return Double.POSITIVE_INFINITY;
+    }
+
+    /** Whether the box is free of blocks, the world's and those of ships, which the world's collision does not know. */
+    public static boolean clear(Entity self, AABB box) {
+
+        return self.level().noCollision(self, box) && !Ships.collides(self.level(), box);
     }
 }

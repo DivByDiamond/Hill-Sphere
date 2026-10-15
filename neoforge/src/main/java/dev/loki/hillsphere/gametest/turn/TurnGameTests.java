@@ -48,6 +48,9 @@ public final class TurnGameTests {
     /** Where the pig starts: touching the ball's east face, its middle level with the core. */
     private static final Vec3 BESIDE = new Vec3(4.45, 3.05, 3.5);
 
+    /** Over the ball's top east edge, half on the top face. */
+    private static final Vec3 ON_THE_EDGE = new Vec3(4.3, 5.0, 3.5);
+
     /** The ball's east face, relative to the test area. */
     private static final double FACE = 4.0;
 
@@ -87,6 +90,32 @@ public final class TurnGameTests {
             helper.assertTrue(same(pig.getBoundingBox(), turned), "the box should be the turned body " + turned + ", not " + pig.getBoundingBox());
             helper.succeed();
         });
+    }
+
+    /** A pig set on the ball's top east edge, where the pull is about halfway between the top face and the east one. */
+    @GameTest(template = "empty", timeoutTicks = 400, batch = "aMobOnTheEdgeOfTheBallDoesNotFlickerBetweenFaces")
+    public static void aMobOnTheEdgeOfTheBallDoesNotFlickerBetweenFaces(GameTestHelper helper) {
+
+        CoreGameTests.liftCore(helper, Polarity.ATTRACT);
+        ball(helper);
+        helper.runAfterDelay(100, () -> {
+            final Mob pig = helper.spawnWithNoFreeWill(EntityType.PIG, ON_THE_EDGE);
+            count(helper, pig, LivingGravity.frameOf(pig), 0, 100);
+        });
+    }
+
+    /** Counts the turns of "down" over the given ticks; settling onto one face takes one, more is flicker. */
+    private static void count(GameTestHelper helper, Mob pig, GravityFrame was, int turns, int left) {
+
+        final GravityFrame now = LivingGravity.frameOf(pig);
+        final int counted = turns + (now != was ? 1 : 0);
+        helper.assertTrue(counted <= 1, "the pig should settle on one face, but turned " + counted + " times, last into " + now
+                + " at " + pig.position());
+        if (left > 0) {
+            helper.runAfterDelay(1, () -> count(helper, pig, now, counted, left - 1));
+            return;
+        }
+        helper.succeed();
     }
 
     /** Each tick: the pig's box is clear of every block and outside the ball's face; at the end it stands on the face. */
