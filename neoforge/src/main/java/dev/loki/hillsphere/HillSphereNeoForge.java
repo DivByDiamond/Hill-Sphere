@@ -19,6 +19,7 @@
 package dev.loki.hillsphere;
 
 import dev.loki.hillsphere.client.ClientInit;
+import dev.loki.hillsphere.client.particle.ParticleConfig;
 import dev.loki.hillsphere.command.HillSphereCommand;
 import dev.loki.hillsphere.compat.Ships;
 import dev.loki.hillsphere.config.GogglesConfig;
@@ -49,6 +50,7 @@ public class HillSphereNeoForge {
 
         container.registerConfig(ModConfig.Type.SERVER, HillSphereConfig.SPEC);
         container.registerConfig(ModConfig.Type.CLIENT, GogglesConfig.SPEC);
+        container.registerConfig(ModConfig.Type.CLIENT, ParticleConfig.SPEC, "hillsphere-particles.toml");
         modBus.addListener(ModConfigEvent.Loading.class, HillSphereConfig::onConfig);
         modBus.addListener(ModConfigEvent.Reloading.class, HillSphereConfig::onConfig);
         ModBlocks.register(modBus);

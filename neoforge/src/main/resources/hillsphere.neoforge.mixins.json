@@ -26,6 +26,8 @@
     "client.FrameCameraMixin",
     "client.FrameOverlayMixin",
     "client.LocalPlayerMixin",
+    "particle.ParticleAddMixin",
+    "particle.ParticleSwayMixin",
     "frame.FramePoseMixin"
   ],
   "server": [],
