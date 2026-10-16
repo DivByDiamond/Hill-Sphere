@@ -19,18 +19,28 @@
 package dev.loki.hillsphere.compat.sable;
 
 import dev.loki.hillsphere.compat.ShipAccess;
+import dev.loki.hillsphere.compat.ShipPlot;
 import dev.loki.hillsphere.field.math.Vec3d;
 import dev.loki.hillsphere.field.shape.Deck;
 import net.minecraft.core.BlockPos;
 import dev.ryanhcode.sable.Sable;
+import dev.ryanhcode.sable.companion.math.BoundingBox3d;
+import dev.ryanhcode.sable.companion.math.BoundingBox3i;
+import dev.ryanhcode.sable.companion.math.BoundingBox3ic;
+import dev.ryanhcode.sable.companion.math.Pose3dc;
+import dev.ryanhcode.sable.sublevel.SubLevel;
 import dev.ryanhcode.sable.mixinhelpers.CanFallAtleastHelper;
 import dev.ryanhcode.sable.neoforge.event.ForgeSablePrePhysicsTickEvent;
 
+import java.util.ArrayList;
+import java.util.List;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.common.NeoForge;
+import org.joml.Vector3d;
+import org.joml.Vector3dc;
 
 /**
  * Sable ships: a core on a ship has its field where the ship is in the world, and the fields push
@@ -59,6 +69,32 @@ public final class SableShips implements ShipAccess {
     public boolean collides(Level level, AABB box) {
 
         return CanFallAtleastHelper.canFallAtleastWithSubLevels(level, box) != null;
+    }
+
+    @Override
+    public List<ShipPlot> shipsNear(Level level, Vec3d at, double range) {
+
+        final List<ShipPlot> found = new ArrayList<>();
+        final BoundingBox3d around = new BoundingBox3d(at.x() - range, at.y() - range, at.z() - range, at.x() + range,
+                at.y() + range, at.z() + range);
+        for (final SubLevel ship : Sable.HELPER.getAllIntersecting(level, around)) {
+            final BoundingBox3ic b = ship.getPlot().getBoundingBox();
+            if (b == null || b == BoundingBox3i.EMPTY) {
+                continue;
+            }
+            final Pose3dc pose = ship.logicalPose();
+            found.add(new ShipPlot(new BlockPos(b.minX(), b.minY(), b.minZ()), new BlockPos(b.maxX(), b.maxY(), b.maxZ()),
+                    p -> vec(pose.transformPosition(new Vector3d(p.x(), p.y(), p.z()))),
+                    p -> vec(pose.transformPositionInverse(new Vector3d(p.x(), p.y(), p.z()))),
+                    d -> vec(pose.transformNormalInverse(new Vector3d(d.x(), d.y(), d.z()), new Vector3d())),
+                    d -> vec(pose.transformNormal(new Vector3d(d.x(), d.y(), d.z()), new Vector3d()))));
+        }
+        return found;
+    }
+
+    private static Vec3d vec(Vector3dc v) {
+
+        return new Vec3d(v.x(), v.y(), v.z());
     }
 
     @Override

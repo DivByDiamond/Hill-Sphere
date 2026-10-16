@@ -20,6 +20,7 @@ package dev.loki.hillsphere.compat;
 
 import dev.loki.hillsphere.field.math.Vec3d;
 import dev.loki.hillsphere.field.shape.Deck;
+import java.util.List;
 import net.minecraft.core.BlockPos;
 
 import net.minecraft.world.entity.Entity;
@@ -54,6 +55,12 @@ public interface ShipAccess {
     default boolean collides(Level level, AABB box) {
 
         return false;
+    }
+
+    /** The ships whose blocks may lie within {@code range} of the point; none without a ship mod. */
+    default List<ShipPlot> shipsNear(Level level, Vec3d point, double range) {
+
+        return List.of();
     }
 
     /** The deck a deck-shaped core on a ship fills: the ship's hull; null when the block is not on a ship. */
