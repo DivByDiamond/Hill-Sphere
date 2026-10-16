@@ -53,14 +53,6 @@ final class ShellLines {
         this.gain = gain;
     }
 
-    /** Two unit vectors at right angles to the axis and each other. */
-    static Vec3[] across(Vec3 axis) {
-
-        final Vec3 helper = Math.abs(axis.y) < 0.9 ? new Vec3(0, 1, 0) : new Vec3(1, 0, 0);
-        final Vec3 u = axis.cross(helper).normalize();
-        return new Vec3[] {u, axis.cross(u).normalize()};
-    }
-
     void sphere(Vec3 centre, double radius, int meridians, int parallels, double turn, int colour) {
 
         final Vec3[] flat = {new Vec3(1, 0, 0), new Vec3(0, 0, 1)};
@@ -96,7 +88,13 @@ final class ShellLines {
 
     void line(Vec3 from, Vec3 to, int colour) {
 
-        brush.line(from, to, fade(from, colour), fade(to, colour));
+        line(from, to, colour, colour);
+    }
+
+    /** A line whose ends have their own colours, blended along it. */
+    void line(Vec3 from, Vec3 to, int fromColour, int toColour) {
+
+        brush.line(from, to, fade(from, fromColour), fade(to, toColour));
     }
 
     private int fade(Vec3 point, int colour) {

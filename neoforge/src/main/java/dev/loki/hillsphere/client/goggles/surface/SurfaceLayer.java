@@ -31,7 +31,8 @@ import net.minecraft.world.phys.Vec3;
 
 /**
  * Soft fills on the faces one can stand on: in the field's colour where the wearer can step on without
- * turning, pale where the field would turn them round. A slow wave runs out from the wearer. The scan runs
+ * turning, pale where the field would turn them round (fainter next to the seam of two cores, so it does not pile up
+ * on the seam's rings). A slow wave runs out from the wearer. The scan runs
  * every few ticks; drawing only reads it.
  */
 public final class SurfaceLayer implements WorldLayer {
@@ -41,6 +42,8 @@ public final class SurfaceLayer implements WorldLayer {
     private static final double INNER = 0.3;
     private static final double ALPHA = 0.22;
     private static final double TURN_ALPHA = 0.3;
+    /** How much of a pale fill fades out right at the seam of two cores, where the goggles draw the seam itself. */
+    private static final double SEAM_DIM = 0.85;
 
     private List<SurfaceScanner.Face> faces = List.of();
     private long scannedAt = -Integer.MAX_VALUE;
@@ -71,7 +74,8 @@ public final class SurfaceLayer implements WorldLayer {
                 return;
             }
             final double wave = 0.7 + 0.3 * Math.sin(time * 0.12 - face.distance() * 0.5);
-            final double alpha = opacity * wave * Brush.fadeWithDistance(face.distance(), range) * (face.turns() ? TURN_ALPHA : ALPHA);
+            final double kind = face.turns() ? TURN_ALPHA * (1 - SEAM_DIM * face.seam()) : ALPHA;
+            final double alpha = opacity * wave * Brush.fadeWithDistance(face.distance(), range) * kind;
             final int rgb = face.turns() ? Palette.PALE : Palette.of(face.polarity())[Palette.MAIN];
             final Vec3 centre = face.centre().add(face.normal().scale(LIFT));
             square(brush, centre, face, OUTER, Palette.argb(rgb, alpha * 0.5));
