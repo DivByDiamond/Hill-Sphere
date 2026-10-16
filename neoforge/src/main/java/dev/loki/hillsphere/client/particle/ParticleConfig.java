@@ -27,6 +27,7 @@ public final class ParticleConfig {
 
     public static final ModConfigSpec.BooleanValue ENABLED;
     public static final ModConfigSpec.DoubleValue STRENGTH;
+    public static final ModConfigSpec.BooleanValue RAIN_ENABLED;
     public static final ModConfigSpec.DoubleValue RAIN;
     public static final ModConfigSpec.IntValue RANGE;
 
@@ -37,6 +38,8 @@ public final class ParticleConfig {
                 .define("enabled", true);
         STRENGTH = b.comment("How far they follow the field: 0 not at all, 1 fully")
                 .defineInRange("strength", 0.6, 0.0, 1.0);
+        RAIN_ENABLED = b.comment("Rain and snow lean along the field; false draws them straight down as in vanilla")
+                .define("rainEnabled", true);
         RAIN = b.comment("How far rain and snow lean along the field: 0 falls straight down, 1 falls along the field")
                 .defineInRange("rain", 0.8, 0.0, 1.0);
         RANGE = b.comment("Particles farther than this from the player are left alone, in blocks")

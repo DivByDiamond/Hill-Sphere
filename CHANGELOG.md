@@ -1,14 +1,27 @@
 # Changelog
 
-## Unreleased
+## 0.1.0-beta.2
 
-- Deck shape for the Hill Core: one "down" all over a box instead of a sphere. On a Sable ship the
-  box is the whole ship, turned with it, so a ship of any shape has a floor; on the ground it is a cube
-- "Down" turns toward a floor under the feet: step off the edge of a small planet and you land on
-  its side at once, walk up to a wall the field leans toward and you stand on it; a hop no longer
-  turns you
-- Air thrust in a field only in free flight (no floor within 1.5 blocks) and along the look; normal
-  jumps are vanilla again
+Second test build: gravity on ships and walls reworked, plus new goggle options. Still rough; please report
+what you find.
+
+- Hill Core shape: "Sphere" or "Hull". A hull core fills a box: on a Sable ship the whole ship (turned with
+  it), so a ship of any shape has a floor; on the ground a cube. New cores start at level 4 (1 g)
+- "Down" turns toward a floor under the feet: step off the edge of a small planet and you land on its side,
+  walk up to a wall the field leans toward and you stand on it; a hop no longer turns you, and the turn no
+  longer flickers on stepped surfaces
+- Air control (WASD along the look, space and shift along "up") only in free flight; normal jumps are vanilla
+- Fixes on ships: no more falling through a planet when "down" turns, no sliding on the side of a ship, no
+  runaway speed, the camera and the light on the model are right on walls, the crosshair aims from the head
+- Overlapping fields blend as vectors: two pulls cancel smoothly on the line between cores, an attracting core
+  next to a repelling one no longer throws the body sideways, three cores do not jump
+- Goggles: faces you can stand on are marked on Sable ships too; the seam between two fields is drawn where the
+  fields really split; client settings for the Boundaries layer (`hillsphere-shell.toml`: presets, colours,
+  density, spin, pulse, wave, flicker, fade-in)
+- Rain and snow lean along the field (client option `rainEnabled` in `hillsphere-particles.toml`, `rain`
+  sets how far); particles fall along the field too (`enabled`, `strength`, `range`)
+- Own creative tab; the core settings screen is no longer blurred; the goggle overlay is drawn after clouds
+- Camera follows the turn along an arc, ship levitation scales with the field radius
 
 ## 0.1.0-beta.1
 

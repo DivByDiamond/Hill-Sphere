@@ -45,6 +45,18 @@ jobs:
           JAR=$(ls neoforge/build/libs/hillsphere-*.jar | grep -v -- '-sources\|-javadoc' | head -n1)
           echo "path=$JAR" >> "$GITHUB_OUTPUT"
 
+      - name: Release notes of this version
+        run: |
+          VERSION="${TAG#v}"
+          awk -v v="$VERSION" '
+            /^## / { if (on) exit; on = ($2 == v); next }
+            on { print }
+          ' CHANGELOG.md | sed -e :a -e '/^\n*$/{$d;N;ba' -e '}' > release-notes.md
+          if [ ! -s release-notes.md ]; then
+            echo "Hill Sphere $VERSION" > release-notes.md
+          fi
+          cat release-notes.md
+
       - name: GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -53,9 +65,10 @@ jobs:
           if [[ "$TAG" == *-* ]]; then ARGS+=(--prerelease); fi
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release upload "$TAG" "${{ steps.jar.outputs.path }}" --clobber
+            gh release edit "$TAG" --notes-file release-notes.md
           else
             gh release create "$TAG" "${{ steps.jar.outputs.path }}" \
-              --title "Hill Sphere $TAG" --generate-notes "${ARGS[@]}"
+              --title "Hill Sphere $TAG" --notes-file release-notes.md "${ARGS[@]}"
           fi
 
       - name: CurseForge
@@ -68,7 +81,7 @@ jobs:
           name: Hill Sphere ${{ env.TAG }}
           version: ${{ env.TAG }}
           version-type: ${{ contains(env.TAG, 'alpha') && 'alpha' || contains(env.TAG, '-') && 'beta' || 'release' }}
-          changelog-file: CHANGELOG.md
+          changelog-file: release-notes.md
           loaders: neoforge
           game-versions: 1.21.1
           java: 21
