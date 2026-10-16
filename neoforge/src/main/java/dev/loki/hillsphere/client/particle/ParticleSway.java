@@ -21,6 +21,7 @@ package dev.loki.hillsphere.client.particle;
 import dev.loki.hillsphere.debug.Debug;
 import dev.loki.hillsphere.field.math.Vec3d;
 import dev.loki.hillsphere.field.particle.ParticlePull;
+import dev.loki.hillsphere.field.particle.RainTilt;
 import dev.loki.hillsphere.field.resolve.Gravity;
 import dev.loki.hillsphere.world.ClientFields;
 
@@ -44,6 +45,7 @@ public final class ParticleSway {
     private static boolean enabled;
     private static double strength;
     private static double range;
+    private static double rain;
     private static int seen;
     private static int pushed;
 
@@ -62,6 +64,20 @@ public final class ParticleSway {
 
         final Gravity gravity = gravityAt(x, y, z);
         return gravity == null ? null : ParticlePull.lean(velocity, gravity, mix(x, y, z));
+    }
+
+    /** The lean of the rain strip at the point, as (x, z) per block of height, or null to draw it vertical. */
+    public static Vec3d rainSlope(double x, double y, double z) {
+
+        final Gravity gravity = gravityAt(x, y, z);
+        final double share = rainShare(x, y, z);
+        return gravity == null || share <= 0 ? null : RainTilt.slope(gravity, share);
+    }
+
+    private static double rainShare(double x, double y, double z) {
+
+        final LocalPlayer player = Minecraft.getInstance().player;
+        return player == null ? 0 : rain * ParticlePull.fade(Math.sqrt(player.distanceToSqr(x, y, z)), range);
     }
 
     private static double mix(double x, double y, double z) {
@@ -119,6 +135,7 @@ public final class ParticleSway {
             enabled = ParticleConfig.ENABLED.get();
             strength = ParticleConfig.STRENGTH.get();
             range = ParticleConfig.RANGE.get();
+            rain = ParticleConfig.RAIN.get();
         }
     }
 }

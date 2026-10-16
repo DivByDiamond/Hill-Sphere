@@ -30,6 +30,7 @@
     "client.LocalPlayerMixin",
     "particle.ParticleAddMixin",
     "particle.ParticleSwayMixin",
+    "particle.RainTiltMixin",
     "frame.FramePoseMixin"
   ],
   "server": [],
