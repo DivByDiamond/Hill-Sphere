@@ -41,12 +41,15 @@ final class ShellEase {
     }
 
     private final Map<CoreField, Seen> before = new IdentityHashMap<>();
+    private final Map<CoreField, Integer> ages = new IdentityHashMap<>();
     private List<CoreField> last = List.of();
 
     /** Call once a tick with the cores now in sight. */
     void tick(List<CoreField> now) {
 
         before.clear();
+        final Map<CoreField, Integer> older = new IdentityHashMap<>(ages);
+        ages.clear();
         for (final CoreField core : now) {
             CoreField match = null;
             double best = SAME;
@@ -57,11 +60,18 @@ final class ShellEase {
                     match = old;
                 }
             }
+            ages.put(core, match == null ? 0 : older.getOrDefault(match, 0) + 1);
             if (match != null) {
                 before.put(core, new Seen(match.center(), match.radius()));
             }
         }
         last = now;
+    }
+
+    /** Ticks since the core came into sight, with the part of the tick that has passed. */
+    double age(CoreField core, float partialTick) {
+
+        return ages.getOrDefault(core, 0) + partialTick;
     }
 
     double radius(CoreField core, float partialTick) {

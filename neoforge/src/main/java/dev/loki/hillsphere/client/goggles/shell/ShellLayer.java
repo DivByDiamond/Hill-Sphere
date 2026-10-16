@@ -22,10 +22,13 @@ import dev.loki.hillsphere.client.goggles.GogglesState;
 import dev.loki.hillsphere.client.goggles.Palette;
 import dev.loki.hillsphere.client.goggles.render.Brush;
 import dev.loki.hillsphere.client.goggles.render.WorldLayer;
+import dev.loki.hillsphere.client.goggles.shell.look.ShellStyle;
+import dev.loki.hillsphere.client.goggles.shell.look.ShellStyle.Fx;
 import dev.loki.hillsphere.config.GogglesConfig;
 import dev.loki.hillsphere.field.Polarity;
 import dev.loki.hillsphere.field.resolve.CoreField;
 import dev.loki.hillsphere.field.view.BoundaryProfile;
+import dev.loki.hillsphere.field.view.effect.ShellEffects;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,10 +41,6 @@ import net.minecraft.world.phys.Vec3;
  */
 public final class ShellLayer implements WorldLayer {
 
-    private static final int SEGMENTS = 48;
-    private static final int RINGS = 8;
-    private static final int RIBS = 10;
-    private static final double SPIN = 0.002;
     private static final double VIEW = 72;
 
     private final ShellEase ease = new ShellEase();
@@ -58,6 +57,7 @@ public final class ShellLayer implements WorldLayer {
         final List<CoreField> spheres = state.near().stream().filter(core -> core.deck() == null).toList();
         shells = spheres.subList(0, Math.min(spheres.size(), GogglesConfig.MAX_SHELLS.get()));
         ease.tick(shells);
+        final int rings = ShellStyle.rings();
         final List<Boundary> found = new ArrayList<>();
         for (int i = 0; i < shells.size(); i++) {
             for (int j = i + 1; j < shells.size(); j++) {
@@ -66,7 +66,7 @@ public final class ShellLayer implements WorldLayer {
                 if (a.polarity() == Polarity.LEVITATE || b.polarity() == Polarity.LEVITATE) {
                     continue;
                 }
-                final List<BoundaryProfile.Point> profile = BoundaryProfile.between(state.tuning(), a, b, RINGS);
+                final List<BoundaryProfile.Point> profile = BoundaryProfile.between(state.tuning(), a, b, rings);
                 if (!profile.isEmpty()) {
                     final Vec3 start = GogglesState.of(a.center());
                     found.add(new Boundary(start, GogglesState.of(b.center()).subtract(start).normalize(), profile));
@@ -79,32 +79,62 @@ public final class ShellLayer implements WorldLayer {
     @Override
     public void render(Brush brush, GogglesState state, float partialTick) {
 
-        final double spin = state.time(partialTick) * SPIN;
-        final double opacity = GogglesConfig.OPACITY.get();
-        final Lines lines = new Lines(brush, VIEW);
+        final ShellStyle style = ShellStyle.read();
+        final Fx fx = style.fx();
+        final double time = state.time(partialTick);
+        final double spin = time * style.look().spin();
+        final double opacity = GogglesConfig.OPACITY.get() * (fx.pulse() ? ShellEffects.pulse(time, fx.pulseDepth(), fx.pulsePeriod()) : 1);
+        final ShellLines lines = new ShellLines(brush, VIEW);
         for (final CoreField core : shells) {
             final int[] ramp = Palette.of(core.polarity());
             final Vec3 centre = ease.centre(core, partialTick);
             final double radius = ease.radius(core, partialTick);
-            lines.sphere(centre, radius, 12, 5, spin, Palette.argb(ramp[Palette.MAIN], 0.45 * opacity));
-            lines.sphere(centre, radius * state.tuning().plateau(), 20, 9, -spin, Palette.argb(ramp[Palette.DARK], 0.3 * opacity));
+            final double gain = opacity * coreGain(fx, core, ease.age(core, partialTick), time, brush.camera().distanceTo(centre) / radius);
+            lines.gain(fx.wave() ? point -> wave(fx, time, point.y - centre.y) : ShellLines.Gain.NONE);
+            lines.sphere(centre, radius, style.look().edgeMeridians(), style.look().edgeParallels(), spin,
+                    Palette.argb(pick(style.edgeColour(), ramp[Palette.MAIN]), style.look().edgeAlpha() * gain));
+            if (style.look().showPlateau()) {
+                lines.sphere(centre, radius * state.tuning().plateau(), style.look().plateauMeridians(),
+                        style.look().plateauParallels(), -spin,
+                        Palette.argb(pick(style.plateauColour(), ramp[Palette.DARK]), style.look().plateauAlpha() * gain));
+            }
         }
         for (final Boundary boundary : boundaries) {
-            drawBoundary(lines, boundary, Palette.argb(Palette.PALE, 0.6 * opacity));
+            lines.gain(fx.wave() ? point -> wave(fx, time, point.subtract(boundary.start()).dot(boundary.axis())) : ShellLines.Gain.NONE);
+            drawBoundary(lines, boundary, style.look().ribs(),
+                    Palette.argb(pick(style.boundaryColour(), Palette.PALE), style.look().boundaryAlpha() * opacity));
         }
     }
 
-    private static void drawBoundary(Lines lines, Boundary boundary, int colour) {
+    /** Entry fade and edge flicker of one field. */
+    private static double coreGain(Fx fx, CoreField core, double age, double time, double edgeRatio) {
 
-        final Vec3[] side = Lines.across(boundary.axis());
+        final double entry = fx.entry() ? ShellEffects.entry(age, fx.entryTicks()) : 1;
+        final double seed = core.center().x() * 13 + core.center().z() * 7;
+        return entry * (fx.flicker() ? ShellEffects.flicker(time, edgeRatio, fx.flickerDepth(), seed) : 1);
+    }
+
+    private static double wave(Fx fx, double time, double along) {
+
+        return ShellEffects.wave(time, along, fx.waveDepth(), fx.waveLength(), fx.waveSpeed());
+    }
+
+    private static int pick(int custom, int bySign) {
+
+        return custom == ShellStyle.BY_SIGN ? bySign : custom;
+    }
+
+    private static void drawBoundary(ShellLines lines, Boundary boundary, int ribs, int colour) {
+
+        final Vec3[] side = ShellLines.across(boundary.axis());
         final List<BoundaryProfile.Point> profile = boundary.profile();
         for (final BoundaryProfile.Point point : profile) {
             if (point.radial() > 0) {
                 lines.circle(boundary.start().add(boundary.axis().scale(point.along())), side, point.radial(), 0, colour);
             }
         }
-        for (int rib = 0; rib < RIBS; rib++) {
-            final double angle = 2 * Math.PI * rib / RIBS;
+        for (int rib = 0; rib < ribs; rib++) {
+            final double angle = 2 * Math.PI * rib / ribs;
             Vec3 from = null;
             for (final BoundaryProfile.Point point : profile) {
                 final Vec3 to = boundary.start().add(boundary.axis().scale(point.along()))
@@ -114,63 +144,6 @@ public final class ShellLayer implements WorldLayer {
                 }
                 from = to;
             }
-        }
-    }
-
-    /** Lines that fade with distance from the camera. */
-    private record Lines(Brush brush, double view) {
-
-        /** Two unit vectors at right angles to the axis and each other. */
-        static Vec3[] across(Vec3 axis) {
-
-            final Vec3 helper = Math.abs(axis.y) < 0.9 ? new Vec3(0, 1, 0) : new Vec3(1, 0, 0);
-            final Vec3 u = axis.cross(helper).normalize();
-            return new Vec3[] {u, axis.cross(u).normalize()};
-        }
-
-        void sphere(Vec3 centre, double radius, int meridians, int parallels, double turn, int colour) {
-
-            final Vec3[] flat = {new Vec3(1, 0, 0), new Vec3(0, 0, 1)};
-            for (int k = 1; k <= parallels; k++) {
-                final double theta = Math.PI * k / (parallels + 1);
-                circle(centre.add(0, radius * Math.cos(theta), 0), flat, radius * Math.sin(theta), turn, colour);
-            }
-            for (int m = 0; m < meridians; m++) {
-                final double phi = turn + 2 * Math.PI * m / meridians;
-                final Vec3 out = new Vec3(Math.cos(phi), 0, Math.sin(phi));
-                Vec3 from = centre.add(0, radius, 0);
-                for (int s = 1; s <= SEGMENTS / 2; s++) {
-                    final double theta = 2 * Math.PI * s / SEGMENTS;
-                    final Vec3 to = centre.add(out.scale(radius * Math.sin(theta))).add(0, radius * Math.cos(theta), 0);
-                    line(from, to, colour);
-                    from = to;
-                }
-            }
-        }
-
-        void circle(Vec3 centre, Vec3[] plane, double radius, double turn, int colour) {
-
-            Vec3 from = null;
-            for (int s = 0; s <= SEGMENTS; s++) {
-                final double a = turn + 2 * Math.PI * s / SEGMENTS;
-                final Vec3 to = centre.add(plane[0].scale(radius * Math.cos(a))).add(plane[1].scale(radius * Math.sin(a)));
-                if (from != null) {
-                    line(from, to, colour);
-                }
-                from = to;
-            }
-        }
-
-        void line(Vec3 from, Vec3 to, int colour) {
-
-            brush.line(from, to, fade(from, colour), fade(to, colour));
-        }
-
-        private int fade(Vec3 point, int colour) {
-
-            final double distance = point.distanceTo(brush.camera());
-            final double k = (1 - Brush.smoothstep(view * 0.5, view, distance)) * Brush.smoothstep(0.5, 2.5, distance);
-            return Palette.argb(colour, (colour >>> 24) / 255.0 * k);
         }
     }
 }
