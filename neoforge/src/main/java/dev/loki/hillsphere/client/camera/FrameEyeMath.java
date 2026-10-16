@@ -18,12 +18,14 @@
  */
 package dev.loki.hillsphere.client.camera;
 
+import dev.loki.hillsphere.compat.Ships;
 import dev.loki.hillsphere.field.frame.GravityFrame;
 import dev.loki.hillsphere.field.math.Vec3d;
 
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -69,10 +71,20 @@ public final class FrameEyeMath {
         if (hit.getType() == HitResult.Type.MISS) {
             return target;
         }
-        final double clear = hit.getLocation().distanceTo(feet) - MARGIN;
+        final double clear = worldOf(level, hit.getLocation()).distanceTo(feet) - MARGIN;
         if (clear < MIN_CLEARANCE) {
             return feet;
         }
         return feet.add(delta.scale(clear / dist));
+    }
+
+    /** A hit on a ship's block lies among the ship's blocks, far off in the world; this is where it is in the world. */
+    private static Vec3 worldOf(BlockGetter level, Vec3 hit) {
+
+        if (!(level instanceof Level world)) {
+            return hit;
+        }
+        final Vec3d at = Ships.toWorld(world, new Vec3d(hit.x, hit.y, hit.z));
+        return new Vec3(at.x(), at.y(), at.z());
     }
 }

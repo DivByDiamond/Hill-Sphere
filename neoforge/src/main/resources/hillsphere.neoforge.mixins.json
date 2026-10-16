@@ -12,6 +12,7 @@
     "debug.MoveTraceMixin",
     "eye.FrameFacingMixin",
     "eye.FrameFluidEyeMixin",
+    "eye.FrameLightMixin",
     "eye.FrameSightMixin",
     "frame.FrameFootMixin",
     "frame.FrameStepMixin",

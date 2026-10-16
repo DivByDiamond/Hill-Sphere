@@ -136,7 +136,11 @@ public abstract class EntityFrameMixin implements FrameState {
 
         if (hillsphereInside) {
             final Entity self = (Entity) (Object) this;
-            self.setDeltaMovement(toVirtual(self.getDeltaMovement()));
+            final Vec3 v = toVirtual(self.getDeltaMovement());
+            // Standing on a floor Sable resolves by pushing the body back (a ship), nothing zeroes the speed into
+            // it as vanilla does, and the pull piles it up every tick: 5 blocks a tick after a few seconds.
+            final boolean pressed = self.onGround() && v.y < 0;
+            self.setDeltaMovement(pressed ? new Vec3(v.x, 0, v.z) : v);
         }
     }
 
