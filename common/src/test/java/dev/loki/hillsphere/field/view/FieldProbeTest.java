@@ -57,4 +57,17 @@ class FieldProbeTest {
         final double edge = FieldProbe.at(T, List.of(core), new Vec3d(9, 0, 0)).influence();
         assertEquals(T.fade(0.9), edge, 1e-9);
     }
+
+    @Test
+    void theSeamOfTwoPullsShowsWhereTheyAreAboutEqual() {
+
+        final CoreField left = new CoreField(Vec3d.ZERO, 16, 1, Polarity.ATTRACT);
+        final CoreField right = new CoreField(new Vec3d(10, 0, 0), 16, 1.5, Polarity.ATTRACT);
+        assertEquals(0, FieldProbe.at(T, List.of(left), new Vec3d(5, 0, 0)).seam(), 1e-9);
+        assertEquals(0, FieldProbe.at(T, List.of(left, right), new Vec3d(5, 0, 0)).seam(), 1e-9);
+        final CoreField twin = new CoreField(new Vec3d(10, 0, 0), 16, 1, Polarity.ATTRACT);
+        assertEquals(1, FieldProbe.at(T, List.of(left, twin), new Vec3d(5, 3, 0)).seam(), 1e-9);
+        final CoreField lift = new CoreField(new Vec3d(10, 0, 0), 16, 1, Polarity.LEVITATE);
+        assertEquals(0, FieldProbe.at(T, List.of(left, lift), new Vec3d(5, 3, 0)).seam(), 1e-9);
+    }
 }

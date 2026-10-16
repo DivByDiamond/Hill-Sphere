@@ -22,17 +22,23 @@ import dev.loki.hillsphere.field.FieldTuning;
 import dev.loki.hillsphere.field.Polarity;
 import dev.loki.hillsphere.field.math.Vec3d;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Picks the gravity at a point from all active cores.
  *
  * <p>Levitation cores do not take part in the choice: they only weaken the result.
- * The core with the largest pull in the point wins. Near the boundary where two cores
- * are about equal the two directions are blended so "down" never jumps. Outside every
- * field the result is vanilla gravity, and at the edge of a field it fades into it.
+ * The core with the largest pull in the point wins. Near a boundary where other cores pull about as hard,
+ * their pulls are averaged in as vectors with weights that fade to zero as the winner pulls away, so "down"
+ * never jumps and two opposing pulls cancel smoothly instead of turning to some side. Outside every field the
+ * result is vanilla gravity, and at the edge of a field it fades into it. The formulas are in {@code docs/FIELDS.md}.
  */
 public final class GravityResolver {
+
+    /** Below this the averaged pulls are taken to cancel exactly. */
+    private static final double CANCELLED = 1e-12;
 
     private final FieldTuning tuning;
 
@@ -56,42 +62,61 @@ public final class GravityResolver {
         return lift;
     }
 
+    /**
+     * How much a core pulling {@code pull} takes part next to the winner pulling {@code best}: 1 when they pull
+     * equally hard, falling to 0 where the winner is {@code blendEnd} times stronger. With two cores this gives the
+     * winner the weight {@code 0.5 + 0.5 * smoothstep(blendStart, blendEnd, best / pull)}.
+     */
+    public static double share(FieldTuning tuning, double best, double pull) {
+
+        if (pull <= 0) {
+            return 0;
+        }
+        final double s = smoothstep(tuning.blendStart(), tuning.blendEnd(), best / pull);
+        return (1 - s) / (1 + s);
+    }
+
     /** Gravity from attracting and repelling cores only, without levitation. */
     public Gravity planetAt(Collection<CoreField> cores, Vec3d point) {
 
+        final List<Candidate> found = new ArrayList<>();
         Candidate best = null;
-        Candidate second = null;
         for (final CoreField core : cores) {
-            if (core.polarity() == Polarity.LEVITATE) {
-                continue;
-            }
-            final Candidate c = candidate(core, point);
-            if (c == null) {
-                continue;
-            }
-            if (best == null || c.pull > best.pull) {
-                second = best;
-                best = c;
-            } else if (second == null || c.pull > second.pull) {
-                second = c;
+            final Candidate c = core.polarity() == Polarity.LEVITATE ? null : candidate(core, point);
+            if (c != null) {
+                found.add(c);
+                best = best == null || c.pull > best.pull ? c : best;
             }
         }
         if (best == null) {
             return Gravity.VANILLA;
         }
-        if (second == null) {
-            return toward(best.direction, best.strength, best.fade);
+        Vec3d sum = Vec3d.ZERO;
+        double weights = 0;
+        double strength = 0;
+        double fade = 0;
+        for (final Candidate c : found) {
+            final double q = share(tuning, best.pull, c.pull);
+            sum = sum.add(c.direction.scale(q));
+            weights += q;
+            strength += q * c.strength;
+            fade += q * c.fade;
         }
+        final Vec3d mean = sum.scale(1 / weights);
+        final double agree = mean.length();
+        final Gravity full = toward(agree < CANCELLED ? best.direction : mean.scale(1 / agree), strength / weights, fade / weights);
+        return agree > 1 - CANCELLED ? full : cancelled(full, fade / weights, agree);
+    }
 
-        final double ratio = best.pull / second.pull;
-        final double w = 0.5 + 0.5 * smoothstep(tuning.blendStart(), tuning.blendEnd(), ratio);
-        final Vec3d direction = Vec3d.slerp(second.direction, best.direction, w);
-        double strength = lerp(second.strength, best.strength, w);
-        if (best.direction.dot(second.direction) < -0.9995) {
-            // opposite equal pulls cancel in the middle instead of picking an arbitrary side
-            strength *= Math.abs(2 * w - 1);
-        }
-        return toward(direction, strength, lerp(second.fade, best.fade, w));
+    /**
+     * Pulls that partly cancel: the field's part of gravity shrinks with {@code agree} (the length of the mean pull
+     * direction) as a vector, so it passes through zero and only the vanilla share of the edge is left there.
+     */
+    private static Gravity cancelled(Gravity full, double fade, double agree) {
+
+        final Vec3d v = Vec3d.DOWN.scale((1 - fade) * (1 - agree)).add(full.direction().scale(full.strength() * agree));
+        final double length = v.length();
+        return new Gravity(length < CANCELLED ? full.direction() : v.scale(1 / length), length);
     }
 
     private Candidate candidate(CoreField core, Vec3d point) {

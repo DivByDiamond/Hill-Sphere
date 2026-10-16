@@ -48,8 +48,14 @@ final class SurfaceScanner {
 
     private static final UnaryOperator<Vec3d> SAME = UnaryOperator.identity();
 
-    /** A face to fill, in the world: its middle, its outward normal and two axes along it; {@code turns} if standing on it would turn the player's "down". */
-    record Face(Vec3 centre, Vec3 normal, Vec3 u, Vec3 v, Polarity polarity, boolean turns, double distance) {
+    /** Below this pull (in g) opposing cores all but cancel: "down" there is no floor to stand on. */
+    private static final double WEIGHTLESS = 0.1;
+
+    /**
+     * A face to fill, in the world: its middle, its outward normal and two axes along it; {@code turns} if standing on it
+     * would turn the player's "down", {@code seam} how close it lies to the seam of two cores (see {@link FieldProbe#seam()}).
+     */
+    record Face(Vec3 centre, Vec3 normal, Vec3 u, Vec3 v, Polarity polarity, boolean turns, double seam, double distance) {
     }
 
     private SurfaceScanner() {
@@ -102,19 +108,19 @@ final class SurfaceScanner {
             final Vec3d wantedUp = dirToLocal.apply(down.scale(-1));
             final Direction up = Direction.getNearest((float) wantedUp.x(), (float) wantedUp.y(), (float) wantedUp.z());
             if (standable(level, pos, up)) {
-                found.add(face(local, up, toWorld, dirToWorld, probe.polarity(), GravityFrame.of(down) != wearer, distance));
+                found.add(face(local, up, toWorld, dirToWorld, probe, GravityFrame.of(down) != wearer, distance));
             }
         }
     }
 
     private static Face face(Vec3d local, Direction side, UnaryOperator<Vec3d> toWorld, UnaryOperator<Vec3d> dirToWorld,
-            Polarity polarity, boolean turns, double distance) {
+            FieldProbe probe, boolean turns, double distance) {
 
         final Vec3d n = new Vec3d(side.getStepX(), side.getStepY(), side.getStepZ());
         final Vec3d[] t = tangents(side);
         final Vec3d middle = toWorld.apply(local.add(n.scale(0.5)));
         return new Face(vec3(middle), vec3(dirToWorld.apply(n)), vec3(dirToWorld.apply(t[0])), vec3(dirToWorld.apply(t[1])),
-                polarity, turns, distance);
+                probe.polarity(), turns, probe.seam(), distance);
     }
 
     /** The two unit axes lying in the face. */
@@ -132,12 +138,15 @@ final class SurfaceScanner {
         return new Vec3(v.x(), v.y(), v.z());
     }
 
-    /** Where "down" points to in the point, as the world axis of the frame it falls to; null where the field leaves gravity alone or cancels it. */
+    /**
+     * Where "down" points to in the point, as the world axis of the frame it falls to; null where the field leaves gravity
+     * alone, where levitation cancels it, or where opposing cores all but cancel each other.
+     */
     private static Vec3d downAt(Vec3d point) {
 
         final GravityField<?> field = ClientFields.field();
         final Gravity planet = field.planetAt(point);
-        if (Gravity.VANILLA.equals(planet) || field.liftAt(point) >= 1) {
+        if (Gravity.VANILLA.equals(planet) || planet.strength() < WEIGHTLESS || field.liftAt(point) >= 1) {
             return null;
         }
         return GravityFrame.of(planet.direction()).toReal(Vec3d.DOWN);

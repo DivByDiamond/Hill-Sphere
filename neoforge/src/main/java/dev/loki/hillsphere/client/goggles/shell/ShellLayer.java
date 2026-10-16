@@ -27,7 +27,7 @@ import dev.loki.hillsphere.client.goggles.shell.look.ShellStyle.Fx;
 import dev.loki.hillsphere.config.GogglesConfig;
 import dev.loki.hillsphere.field.Polarity;
 import dev.loki.hillsphere.field.resolve.CoreField;
-import dev.loki.hillsphere.field.view.BoundaryProfile;
+import dev.loki.hillsphere.field.view.BoundaryMesh;
 import dev.loki.hillsphere.field.view.effect.ShellEffects;
 
 import java.util.ArrayList;
@@ -37,18 +37,23 @@ import net.minecraft.world.phys.Vec3;
 /**
  * Where the nearest fields end: a sparse latitude-longitude shell at the field's radius, a denser and fainter
  * one at the edge of the full-strength plateau, both turning slowly. Where two pulling fields overlap, the
- * surface on which their pulls balance is drawn as pale rings and ribs.
+ * seam on which their pulls balance (where the resolver splits "down" between them) is drawn as rings and ribs: pale
+ * for two attracting or two repelling fields, {@link #BALANCE} for an attracting next to a repelling one. Lines
+ * fade where little happens on the seam (see {@link BoundaryMesh}).
  */
 public final class ShellLayer implements WorldLayer {
 
     private static final double VIEW = 72;
+    private static final int SEGMENTS = 48;
+    /** Seam of an attracting and a repelling field: halfway between their colours. */
+    private static final int BALANCE = Palette.mix(Palette.ATTRACT[Palette.LIGHT], Palette.REPEL[Palette.LIGHT], 0.5);
 
     private final ShellEase ease = new ShellEase();
     private List<CoreField> shells = List.of();
     private List<Boundary> boundaries = List.of();
 
-    /** The balance surface of two fields: profile measured from {@code start} along {@code axis}. */
-    private record Boundary(Vec3 start, Vec3 axis, List<BoundaryProfile.Point> profile) {
+    /** The seam of two fields: its lines, measured for effects from {@code start} along {@code axis}; {@code mixed} for unlike signs. */
+    private record Boundary(Vec3 start, Vec3 axis, List<BoundaryMesh.Line> lines, boolean mixed) {
     }
 
     @Override
@@ -58,6 +63,7 @@ public final class ShellLayer implements WorldLayer {
         shells = spheres.subList(0, Math.min(spheres.size(), GogglesConfig.MAX_SHELLS.get()));
         ease.tick(shells);
         final int rings = ShellStyle.rings();
+        final int ribs = ShellStyle.read().look().ribs();
         final List<Boundary> found = new ArrayList<>();
         for (int i = 0; i < shells.size(); i++) {
             for (int j = i + 1; j < shells.size(); j++) {
@@ -66,10 +72,11 @@ public final class ShellLayer implements WorldLayer {
                 if (a.polarity() == Polarity.LEVITATE || b.polarity() == Polarity.LEVITATE) {
                     continue;
                 }
-                final List<BoundaryProfile.Point> profile = BoundaryProfile.between(state.tuning(), a, b, rings);
-                if (!profile.isEmpty()) {
+                final List<BoundaryMesh.Line> lines = BoundaryMesh.of(state.tuning(), a, b, state.near(), rings, ribs, SEGMENTS);
+                if (!lines.isEmpty()) {
                     final Vec3 start = GogglesState.of(a.center());
-                    found.add(new Boundary(start, GogglesState.of(b.center()).subtract(start).normalize(), profile));
+                    found.add(new Boundary(start, GogglesState.of(b.center()).subtract(start).normalize(), lines,
+                            a.polarity() != b.polarity()));
                 }
             }
         }
@@ -101,8 +108,8 @@ public final class ShellLayer implements WorldLayer {
         }
         for (final Boundary boundary : boundaries) {
             lines.gain(fx.wave() ? point -> wave(fx, time, point.subtract(boundary.start()).dot(boundary.axis())) : ShellLines.Gain.NONE);
-            drawBoundary(lines, boundary, style.look().ribs(),
-                    Palette.argb(pick(style.boundaryColour(), Palette.PALE), style.look().boundaryAlpha() * opacity));
+            drawBoundary(lines, boundary, Palette.argb(pick(style.boundaryColour(), boundary.mixed() ? BALANCE : Palette.PALE),
+                    style.look().boundaryAlpha() * opacity));
         }
     }
 
@@ -124,25 +131,14 @@ public final class ShellLayer implements WorldLayer {
         return custom == ShellStyle.BY_SIGN ? bySign : custom;
     }
 
-    private static void drawBoundary(ShellLines lines, Boundary boundary, int ribs, int colour) {
+    /** Each end of a line as bright as its weight on the seam; the square root keeps faint parts visible. */
+    private static void drawBoundary(ShellLines lines, Boundary boundary, int colour) {
 
-        final Vec3[] side = ShellLines.across(boundary.axis());
-        final List<BoundaryProfile.Point> profile = boundary.profile();
-        for (final BoundaryProfile.Point point : profile) {
-            if (point.radial() > 0) {
-                lines.circle(boundary.start().add(boundary.axis().scale(point.along())), side, point.radial(), 0, colour);
-            }
-        }
-        for (int rib = 0; rib < ribs; rib++) {
-            final double angle = 2 * Math.PI * rib / ribs;
-            Vec3 from = null;
-            for (final BoundaryProfile.Point point : profile) {
-                final Vec3 to = boundary.start().add(boundary.axis().scale(point.along()))
-                        .add(side[0].scale(Math.cos(angle) * point.radial())).add(side[1].scale(Math.sin(angle) * point.radial()));
-                if (from != null) {
-                    lines.line(from, to, colour);
-                }
-                from = to;
+        final double alpha = (colour >>> 24) / 255.0;
+        for (final BoundaryMesh.Line line : boundary.lines()) {
+            if (line.fromWeight() > 0 || line.toWeight() > 0) {
+                lines.line(GogglesState.of(line.from()), GogglesState.of(line.to()),
+                        Palette.argb(colour, alpha * Math.sqrt(line.fromWeight())), Palette.argb(colour, alpha * Math.sqrt(line.toWeight())));
             }
         }
     }
