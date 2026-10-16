@@ -51,8 +51,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * it is pulled back toward that middle until it is in clear air, so a wall beside the head cannot
  * swallow the view. While a ship turns the camera of a seated rider, the ship's turn wins and this
  * one eases back to nothing, so the two never stack.
+ * <p>
+ * Sable wraps the same {@code setPosition} call: for a body that stands on a ship it throws the position it is handed
+ * away and puts the eye at the feet plus the eye height along world +y, carried with the ship. The priority below
+ * Sable's makes this wrap the inner one, so it gets Sable's position and turns that, instead of having its turned eye
+ * replaced by an upright one, which on the side of a ship lies in the ship's face.
  */
-@Mixin(value = Camera.class, priority = 1001)
+@Mixin(value = Camera.class, priority = 999)
 public abstract class FrameCameraMixin {
 
     /** Ticks one quarter turn of easing takes. */

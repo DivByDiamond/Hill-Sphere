@@ -31,10 +31,12 @@ import java.util.Arrays;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.world.phys.Vec3;
+import org.joml.Vector3d;
 import org.joml.Vector3dc;
 
 /** A Sable ship built from blocks of a test area. Only touched by tests that checked Sable is loaded. */
-final class ShipRig {
+public final class ShipRig {
 
     private final GameTestHelper helper;
     private final ServerSubLevel ship;
@@ -48,7 +50,7 @@ final class ShipRig {
     }
 
     /** Lifts the blocks out of the world into a new ship around the first of them. */
-    static ShipRig assemble(GameTestHelper helper, BlockPos... relative) {
+    public static ShipRig assemble(GameTestHelper helper, BlockPos... relative) {
 
         final List<BlockPos> blocks = Arrays.stream(relative).map(helper::absolutePos).toList();
         final BlockPos anchor = blocks.get(0);
@@ -57,7 +59,7 @@ final class ShipRig {
     }
 
     /** Where the ship is in the world. */
-    Vec3d position() {
+    public Vec3d position() {
 
         final Vector3dc p = ship.logicalPose().position();
         return new Vec3d(p.x(), p.y(), p.z());
@@ -75,7 +77,15 @@ final class ShipRig {
         return WorldFields.of(helper.getLevel()).changes().snapshot().get(blockOf(relative));
     }
 
-    void remove() {
+    /** Whether this world point lies in a solid block of the ship, where the ship is now. */
+    public boolean solidAt(Vec3 point) {
+
+        final Vector3d local = ship.logicalPose().transformPositionInverse(new Vector3d(point.x, point.y, point.z));
+        final BlockPos block = BlockPos.containing(local.x, local.y, local.z);
+        return !helper.getLevel().getBlockState(block).getCollisionShape(helper.getLevel(), block).isEmpty();
+    }
+
+    public void remove() {
 
         SubLevelContainer.getContainer(helper.getLevel()).removeSubLevel(ship, SubLevelRemovalReason.REMOVED);
     }
