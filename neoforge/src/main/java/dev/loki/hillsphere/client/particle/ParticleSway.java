@@ -18,6 +18,7 @@
  */
 package dev.loki.hillsphere.client.particle;
 
+import dev.loki.hillsphere.debug.Debug;
 import dev.loki.hillsphere.field.math.Vec3d;
 import dev.loki.hillsphere.field.particle.ParticlePull;
 import dev.loki.hillsphere.field.resolve.Gravity;
@@ -43,6 +44,8 @@ public final class ParticleSway {
     private static boolean enabled;
     private static double strength;
     private static double range;
+    private static int seen;
+    private static int pushed;
 
     private ParticleSway() {
     }
@@ -65,6 +68,20 @@ public final class ParticleSway {
 
         final LocalPlayer player = Minecraft.getInstance().player;
         return player == null ? 0 : strength * ParticlePull.fade(Math.sqrt(player.distanceToSqr(x, y, z)), range);
+    }
+
+    /** Debug only: once a second, how many falling particles were seen and how many were pushed, and what the client knows. */
+    public static void trace(Vec3d push) {
+
+        seen++;
+        pushed += push == null ? 0 : 1;
+        final Minecraft mc = Minecraft.getInstance();
+        if (mc.level != null && mc.level.getGameTime() % 40 == 0 && seen > 0) {
+            Debug.log("[particles] seen={} pushed={} cores={} enabled={} strength={} range={}", seen, pushed,
+                    ClientFields.field().size(), enabled, strength, range);
+            seen = 0;
+            pushed = 0;
+        }
     }
 
     private static Gravity gravityAt(double x, double y, double z) {

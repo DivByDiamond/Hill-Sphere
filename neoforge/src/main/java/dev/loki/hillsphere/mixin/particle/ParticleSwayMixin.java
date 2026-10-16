@@ -19,6 +19,7 @@
 package dev.loki.hillsphere.mixin.particle;
 
 import dev.loki.hillsphere.client.particle.Leanable;
+import dev.loki.hillsphere.debug.Debug;
 import dev.loki.hillsphere.client.particle.ParticleSway;
 import dev.loki.hillsphere.field.math.Vec3d;
 
@@ -59,6 +60,9 @@ public abstract class ParticleSwayMixin implements Leanable {
             return;
         }
         final Vec3d push = ParticleSway.fall(x, y, z, gravity);
+        if (Debug.on()) {
+            ParticleSway.trace(push);
+        }
         if (push != null) {
             xd += push.x();
             yd += push.y();
