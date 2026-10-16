@@ -37,8 +37,9 @@ playing: `noFallDamageInField` turns fall damage off inside fields, `debug` writ
 ./gradlew :neoforge:runGameTestServer
 ```
 
-Releases: push a tag like `0.1.0-beta.1`; GitHub Actions builds the jar and publishes a GitHub
-release (and uploads to CurseForge when `CURSEFORGE_ID` and `CURSEFORGE_API_KEY` are set).
+Releases: push a tag like `0.1.0-beta.2`; GitHub Actions builds the jar and publishes a GitHub
+release (and uploads to CurseForge when `CURSEFORGE_ID` and `CURSEFORGE_API_KEY` are set) with the
+notes of that version from `CHANGELOG.md`.
 Design notes live in [docs/CONCEPT.md](docs/CONCEPT.md), open work in [todo.md](todo.md).
 
 ## Credits and license

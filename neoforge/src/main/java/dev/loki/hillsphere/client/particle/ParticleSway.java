@@ -135,7 +135,7 @@ public final class ParticleSway {
             enabled = ParticleConfig.ENABLED.get();
             strength = ParticleConfig.STRENGTH.get();
             range = ParticleConfig.RANGE.get();
-            rain = ParticleConfig.RAIN.get();
+            rain = ParticleConfig.RAIN_ENABLED.get() ? ParticleConfig.RAIN.get() : 0;
         }
     }
 }
