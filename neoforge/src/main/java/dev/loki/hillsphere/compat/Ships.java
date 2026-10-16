@@ -21,6 +21,7 @@ package dev.loki.hillsphere.compat;
 import dev.loki.hillsphere.compat.sable.SableShips;
 import dev.loki.hillsphere.field.math.Vec3d;
 import dev.loki.hillsphere.field.shape.Deck;
+import java.util.List;
 import net.minecraft.core.BlockPos;
 
 import net.minecraft.world.entity.Entity;
@@ -68,6 +69,12 @@ public final class Ships {
     public static boolean collides(Level level, AABB box) {
 
         return access.collides(level, box);
+    }
+
+    /** @see ShipAccess#shipsNear */
+    public static List<ShipPlot> shipsNear(Level level, Vec3d point, double range) {
+
+        return access.shipsNear(level, point, range);
     }
 
     /** @see ShipAccess#hullOf */
