@@ -19,6 +19,7 @@
     "frame.FrameUseContextMixin",
     "frame.FrameWallMixin",
     "sable.ShipCarryMixin",
+    "sable.ShipEyeMixin",
     "shot.FrameDropMixin",
     "shot.FrameMuzzleMixin",
     "shot.FrameShotMixin"
