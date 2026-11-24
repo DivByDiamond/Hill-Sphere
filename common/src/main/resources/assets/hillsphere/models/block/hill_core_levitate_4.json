@@ -5,76 +5,681 @@
     "casing": "hillsphere:block/hill_core_casing",
     "face": "hillsphere:block/hill_core_face",
     "panel": "hillsphere:block/hill_core_panel",
-    "shaft": "hillsphere:block/hill_core_shaft",
     "lining": "hillsphere:block/hill_core_lining_levitate",
     "pips": "hillsphere:block/hill_core_pips_levitate_4"
   },
   "elements": [
     {
-      "name": "body",
+      "name": "body_x",
       "from": [
         1,
-        1,
-        1
+        2,
+        2
       ],
       "to": [
         15,
+        14,
+        14
+      ],
+      "faces": {
+        "east": {
+          "texture": "#face",
+          "uv": [
+            2,
+            2,
+            14,
+            14
+          ]
+        },
+        "west": {
+          "texture": "#panel",
+          "uv": [
+            2,
+            2,
+            14,
+            14
+          ]
+        }
+      }
+    },
+    {
+      "name": "body_y",
+      "from": [
+        2,
+        1,
+        2
+      ],
+      "to": [
+        14,
         15,
+        14
+      ],
+      "faces": {
+        "up": {
+          "texture": "#casing",
+          "uv": [
+            2,
+            2,
+            14,
+            14
+          ]
+        },
+        "down": {
+          "texture": "#casing",
+          "uv": [
+            2,
+            2,
+            14,
+            14
+          ]
+        }
+      }
+    },
+    {
+      "name": "body_z",
+      "from": [
+        2,
+        2,
+        1
+      ],
+      "to": [
+        14,
+        14,
         15
       ],
       "faces": {
         "north": {
           "texture": "#casing",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            2,
+            2,
+            14,
+            14
           ]
         },
         "south": {
-          "texture": "#panel",
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ]
-        },
-        "east": {
-          "texture": "#face",
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ]
-        },
-        "west": {
-          "texture": "#panel",
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ]
-        },
-        "up": {
           "texture": "#casing",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            2,
+            2,
+            14,
+            14
           ]
-        },
+        }
+      }
+    },
+    {
+      "name": "chamfer_1",
+      "from": [
+        1,
+        2,
+        2
+      ],
+      "to": [
+        2,
+        2,
+        14
+      ],
+      "faces": {
         "down": {
           "texture": "#casing",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            1,
+            2,
+            2,
+            14
+          ]
+        }
+      }
+    },
+    {
+      "name": "chamfer_2",
+      "from": [
+        2,
+        1,
+        2
+      ],
+      "to": [
+        2,
+        2,
+        14
+      ],
+      "faces": {
+        "west": {
+          "texture": "#casing",
+          "uv": [
+            2,
+            14,
+            14,
+            15
+          ]
+        }
+      }
+    },
+    {
+      "name": "chamfer_3",
+      "from": [
+        1,
+        14,
+        2
+      ],
+      "to": [
+        2,
+        14,
+        14
+      ],
+      "faces": {
+        "up": {
+          "texture": "#casing",
+          "uv": [
+            1,
+            2,
+            2,
+            14
+          ]
+        }
+      }
+    },
+    {
+      "name": "chamfer_4",
+      "from": [
+        2,
+        14,
+        2
+      ],
+      "to": [
+        2,
+        15,
+        14
+      ],
+      "faces": {
+        "west": {
+          "texture": "#casing",
+          "uv": [
+            2,
+            1,
+            14,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "name": "chamfer_5",
+      "from": [
+        14,
+        2,
+        2
+      ],
+      "to": [
+        15,
+        2,
+        14
+      ],
+      "faces": {
+        "down": {
+          "texture": "#casing",
+          "uv": [
+            14,
+            2,
+            15,
+            14
+          ]
+        }
+      }
+    },
+    {
+      "name": "chamfer_6",
+      "from": [
+        14,
+        1,
+        2
+      ],
+      "to": [
+        14,
+        2,
+        14
+      ],
+      "faces": {
+        "east": {
+          "texture": "#casing",
+          "uv": [
+            2,
+            14,
+            14,
+            15
+          ]
+        }
+      }
+    },
+    {
+      "name": "chamfer_7",
+      "from": [
+        14,
+        14,
+        2
+      ],
+      "to": [
+        15,
+        14,
+        14
+      ],
+      "faces": {
+        "up": {
+          "texture": "#casing",
+          "uv": [
+            14,
+            2,
+            15,
+            14
+          ]
+        }
+      }
+    },
+    {
+      "name": "chamfer_8",
+      "from": [
+        14,
+        14,
+        2
+      ],
+      "to": [
+        14,
+        15,
+        14
+      ],
+      "faces": {
+        "east": {
+          "texture": "#casing",
+          "uv": [
+            2,
+            1,
+            14,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "name": "chamfer_9",
+      "from": [
+        2,
+        1,
+        2
+      ],
+      "to": [
+        14,
+        2,
+        2
+      ],
+      "faces": {
+        "north": {
+          "texture": "#casing",
+          "uv": [
+            2,
+            14,
+            14,
+            15
+          ]
+        }
+      }
+    },
+    {
+      "name": "chamfer_10",
+      "from": [
+        2,
+        2,
+        1
+      ],
+      "to": [
+        14,
+        2,
+        2
+      ],
+      "faces": {
+        "down": {
+          "texture": "#casing",
+          "uv": [
+            2,
+            14,
+            14,
+            15
+          ]
+        }
+      }
+    },
+    {
+      "name": "chamfer_11",
+      "from": [
+        2,
+        14,
+        2
+      ],
+      "to": [
+        14,
+        15,
+        2
+      ],
+      "faces": {
+        "north": {
+          "texture": "#casing",
+          "uv": [
+            2,
+            1,
+            14,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "name": "chamfer_12",
+      "from": [
+        2,
+        14,
+        1
+      ],
+      "to": [
+        14,
+        14,
+        2
+      ],
+      "faces": {
+        "up": {
+          "texture": "#casing",
+          "uv": [
+            2,
+            1,
+            14,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "name": "chamfer_13",
+      "from": [
+        2,
+        1,
+        14
+      ],
+      "to": [
+        14,
+        2,
+        14
+      ],
+      "faces": {
+        "south": {
+          "texture": "#casing",
+          "uv": [
+            2,
+            14,
+            14,
+            15
+          ]
+        }
+      }
+    },
+    {
+      "name": "chamfer_14",
+      "from": [
+        2,
+        2,
+        14
+      ],
+      "to": [
+        14,
+        2,
+        15
+      ],
+      "faces": {
+        "down": {
+          "texture": "#casing",
+          "uv": [
+            2,
+            1,
+            14,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "name": "chamfer_15",
+      "from": [
+        2,
+        14,
+        14
+      ],
+      "to": [
+        14,
+        15,
+        14
+      ],
+      "faces": {
+        "south": {
+          "texture": "#casing",
+          "uv": [
+            2,
+            1,
+            14,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "name": "chamfer_16",
+      "from": [
+        2,
+        14,
+        14
+      ],
+      "to": [
+        14,
+        14,
+        15
+      ],
+      "faces": {
+        "up": {
+          "texture": "#casing",
+          "uv": [
+            2,
+            14,
+            14,
+            15
+          ]
+        }
+      }
+    },
+    {
+      "name": "chamfer_17",
+      "from": [
+        1,
+        2,
+        2
+      ],
+      "to": [
+        2,
+        14,
+        2
+      ],
+      "faces": {
+        "north": {
+          "texture": "#casing",
+          "uv": [
+            14,
+            2,
+            15,
+            14
+          ]
+        }
+      }
+    },
+    {
+      "name": "chamfer_18",
+      "from": [
+        2,
+        2,
+        1
+      ],
+      "to": [
+        2,
+        14,
+        2
+      ],
+      "faces": {
+        "west": {
+          "texture": "#casing",
+          "uv": [
+            1,
+            2,
+            2,
+            14
+          ]
+        }
+      }
+    },
+    {
+      "name": "chamfer_19",
+      "from": [
+        1,
+        2,
+        14
+      ],
+      "to": [
+        2,
+        14,
+        14
+      ],
+      "faces": {
+        "south": {
+          "texture": "#casing",
+          "uv": [
+            1,
+            2,
+            2,
+            14
+          ]
+        }
+      }
+    },
+    {
+      "name": "chamfer_20",
+      "from": [
+        2,
+        2,
+        14
+      ],
+      "to": [
+        2,
+        14,
+        15
+      ],
+      "faces": {
+        "west": {
+          "texture": "#casing",
+          "uv": [
+            14,
+            2,
+            15,
+            14
+          ]
+        }
+      }
+    },
+    {
+      "name": "chamfer_21",
+      "from": [
+        14,
+        2,
+        2
+      ],
+      "to": [
+        15,
+        14,
+        2
+      ],
+      "faces": {
+        "north": {
+          "texture": "#casing",
+          "uv": [
+            1,
+            2,
+            2,
+            14
+          ]
+        }
+      }
+    },
+    {
+      "name": "chamfer_22",
+      "from": [
+        14,
+        2,
+        1
+      ],
+      "to": [
+        14,
+        14,
+        2
+      ],
+      "faces": {
+        "east": {
+          "texture": "#casing",
+          "uv": [
+            14,
+            2,
+            15,
+            14
+          ]
+        }
+      }
+    },
+    {
+      "name": "chamfer_23",
+      "from": [
+        14,
+        2,
+        14
+      ],
+      "to": [
+        15,
+        14,
+        14
+      ],
+      "faces": {
+        "south": {
+          "texture": "#casing",
+          "uv": [
+            14,
+            2,
+            15,
+            14
+          ]
+        }
+      }
+    },
+    {
+      "name": "chamfer_24",
+      "from": [
+        14,
+        2,
+        14
+      ],
+      "to": [
+        14,
+        14,
+        15
+      ],
+      "faces": {
+        "east": {
+          "texture": "#casing",
+          "uv": [
+            1,
+            2,
+            2,
+            14
           ]
         }
       }
@@ -95,10 +700,10 @@
         "east": {
           "texture": "#lining",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            3,
+            3,
+            13,
+            13
           ],
           "neoforge_data": {
             "block_light": 15,
@@ -121,13 +726,17 @@
       ],
       "faces": {
         "up": {
-          "texture": "#casing",
+          "texture": "#lining",
           "uv": [
             0,
             0,
-            16,
-            16
-          ]
+            3,
+            3
+          ],
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
         }
       }
     },
@@ -145,13 +754,17 @@
       ],
       "faces": {
         "down": {
-          "texture": "#casing",
+          "texture": "#lining",
           "uv": [
             0,
             0,
-            16,
-            16
-          ]
+            3,
+            3
+          ],
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
         }
       }
     },
@@ -169,37 +782,17 @@
       ],
       "faces": {
         "east": {
-          "texture": "#casing",
+          "texture": "#lining",
           "uv": [
             0,
             0,
-            16,
-            16
-          ]
-        }
-      }
-    },
-    {
-      "name": "in_east",
-      "from": [
-        13.99,
-        2,
-        2
-      ],
-      "to": [
-        14,
-        14,
-        14
-      ],
-      "faces": {
-        "west": {
-          "texture": "#casing",
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ]
+            3,
+            3
+          ],
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
         }
       }
     },
@@ -217,13 +810,17 @@
       ],
       "faces": {
         "south": {
-          "texture": "#casing",
+          "texture": "#lining",
           "uv": [
             0,
             0,
-            16,
-            16
-          ]
+            3,
+            3
+          ],
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
         }
       }
     },
@@ -241,36 +838,40 @@
       ],
       "faces": {
         "north": {
-          "texture": "#casing",
+          "texture": "#lining",
           "uv": [
             0,
             0,
-            16,
-            16
-          ]
+            3,
+            3
+          ],
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
         }
       }
     },
     {
       "name": "pips_top",
       "from": [
-        1,
+        2,
         15.02,
-        1
+        2
       ],
       "to": [
-        15,
+        14,
         15.02,
-        15
+        14
       ],
       "faces": {
         "up": {
           "texture": "#pips",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            2,
+            2,
+            14,
+            14
           ],
           "neoforge_data": {
             "block_light": 15,
@@ -282,23 +883,23 @@
     {
       "name": "pips_bottom",
       "from": [
-        1,
+        2,
         0.98,
-        1
+        2
       ],
       "to": [
-        15,
+        14,
         0.98,
-        15
+        14
       ],
       "faces": {
         "down": {
           "texture": "#pips",
           "uv": [
-            0,
-            0,
-            16,
-            16
+            2,
+            2,
+            14,
+            14
           ],
           "neoforge_data": {
             "block_light": 15,

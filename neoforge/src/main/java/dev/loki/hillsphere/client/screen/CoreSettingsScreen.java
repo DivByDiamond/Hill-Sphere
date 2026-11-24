@@ -18,38 +18,65 @@
  */
 package dev.loki.hillsphere.client.screen;
 
+import com.simibubi.create.foundation.gui.AllIcons;
+import com.simibubi.create.foundation.gui.widget.IconButton;
+import com.simibubi.create.foundation.gui.widget.Label;
+import com.simibubi.create.foundation.gui.widget.ScrollInput;
+import com.simibubi.create.foundation.gui.widget.SelectionScrollInput;
+import dev.loki.hillsphere.Constants;
+import dev.loki.hillsphere.block.HillCoreBlock;
 import dev.loki.hillsphere.blockentity.setting.CoreSettings;
 import dev.loki.hillsphere.client.goggles.Palette;
 import dev.loki.hillsphere.field.Polarity;
 import dev.loki.hillsphere.field.control.RedstoneMode;
 import dev.loki.hillsphere.field.shape.Shape;
 import dev.loki.hillsphere.network.CoreSettingsPayload;
-
+import dev.loki.hillsphere.registry.ModItems;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
+import java.util.function.IntConsumer;
+import net.createmod.catnip.gui.AbstractSimiScreen;
+import net.createmod.catnip.gui.element.GuiGameElement;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
- * The screen of a core, in the colours of the goggles: polarity tabs, the redstone mode, the shape and a bar for the
- * strength, all tinted by the polarity picked. A change goes to the server at once for tabs and mode, when
- * the bar is let go, and for anything still unsent when the screen closes.
+ * The screen of a core, built like Create's own (the sequenced gearshift's): a brass title strip, dark wood, and
+ * a grey field per setting that changes when scrolled over, with a tooltip listing the choices. Polarity, redstone
+ * mode, shape and strength level; the level field also shows the six level cells in the polarity's colour. The
+ * settings go to the server when the screen closes (the tick button or Escape).
  */
-public final class CoreSettingsScreen extends Screen {
+public final class CoreSettingsScreen extends AbstractSimiScreen {
 
-    private static final int WIDTH = 232;
-    private static final int HEIGHT = 188;
-    private static final int PAD = 12;
+    private static final ResourceLocation BACKGROUND =
+            ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "textures/gui/core_settings.png");
+    /** Size of the background drawn by docs/tools/textures.py (gui_core): keep the two in step. */
+    private static final int WIDTH = 220;
+    private static final int HEIGHT = 140;
+    private static final int MARGIN = 8;
+    private static final int FIELD_H = 18;
+    private static final String[] CAPTIONS = {"polarity", "mode", "shape", "level"};
+    private static final int ROW_Y = 22;
+    private static final int ROW_STEP = 23;
+    /** Level steps per scroll: a quarter normally, the finest step with Shift. */
+    private static final int COARSE = 5;
+    private static final int TITLE = 0x592424;
+    private static final int CAPTION = 0xE4B763;
 
     private final BlockPos pos;
     private Polarity polarity;
     private RedstoneMode mode;
     private Shape shape;
     private double level;
-    private boolean unsent;
+    /** Where the fields start and how wide they are: after the widest caption in the current language. */
+    private int fieldX;
+    private int fieldW;
 
     private CoreSettingsScreen(CoreSettings settings) {
 
@@ -66,77 +93,98 @@ public final class CoreSettingsScreen extends Screen {
         Minecraft.getInstance().setScreen(new CoreSettingsScreen(settings));
     }
 
-    private int[] ramp() {
-
-        return Palette.of(polarity);
-    }
-
     @Override
     protected void init() {
 
-        final int left = (width - WIDTH) / 2 + PAD;
-        final int top = (height - HEIGHT) / 2;
-        final int inner = WIDTH - 2 * PAD;
-        addRenderableWidget(new PolarityTabs(left, top + 38, inner, 20, polarity, p -> {
-            polarity = p;
-            send();
-        }));
-        addRenderableWidget(new ChoiceRow<>(left, top + 76, inner, 22, mode, "hillsphere.core.mode", this::ramp, m -> {
-            mode = m;
-            send();
-        }));
-        addRenderableWidget(new ChoiceRow<>(left, top + 114, inner, 22, shape, "hillsphere.core.shape", this::ramp, s -> {
-            shape = s;
-            send();
-        }));
-        addRenderableWidget(new LevelBar(left, top + 158, inner, 12, level, this::ramp, v -> {
-            level = v;
-            unsent = true;
-        }, () -> {
-            if (unsent) {
-                send();
-            }
-        }));
+        setWindowSize(WIDTH, HEIGHT);
+        super.init();
+        int widest = 0;
+        for (final String caption : CAPTIONS) {
+            widest = Math.max(widest, font.width(caption(caption)));
+        }
+        fieldX = MARGIN + widest + 10;
+        fieldW = WIDTH - fieldX - MARGIN;
+        addRenderableWidget(choice(0, Polarity.values(), "hillsphere.core.polarity", polarity.ordinal(), field(0),
+                i -> polarity = Polarity.values()[i]));
+        addRenderableWidget(choice(1, RedstoneMode.values(), "hillsphere.core.mode", mode.ordinal(), field(1),
+                i -> mode = RedstoneMode.values()[i]));
+        addRenderableWidget(choice(2, Shape.values(), "hillsphere.core.shape", shape.ordinal(), field(2),
+                i -> shape = Shape.values()[i]));
+        final Label levelLabel = field(3);
+        addRenderableWidget(new ScrollInput(guiLeft + fieldX, rowTop(3), fieldW, FIELD_H)
+                .withRange(0, (int) Math.round(HillCoreBlock.MAX_LEVEL / CoreSettings.LEVEL_STEP) + 1)
+                .withStepFunction(c -> c.shift ? 1 : COARSE)
+                .titled(Component.translatable("hillsphere.core.level"))
+                .format(i -> Component.literal(String.format(Locale.ROOT, "%.2f", i * CoreSettings.LEVEL_STEP)))
+                .writingTo(levelLabel)
+                .calling(i -> level = i * CoreSettings.LEVEL_STEP)
+                .setState((int) Math.round(level / CoreSettings.LEVEL_STEP)));
+        final IconButton confirm = new IconButton(guiLeft + WIDTH - 25, guiTop + HEIGHT - 21, AllIcons.I_CONFIRM);
+        confirm.withCallback(this::onClose);
+        addRenderableWidget(confirm);
     }
 
-    /** Dim and panel go behind the widgets; the vanilla blur would smear everything but the buttons. */
+    private Label field(int row) {
+
+        final Label label = new Label(guiLeft + fieldX + 5, rowTop(row) + 5, Component.empty()).withShadow();
+        addRenderableWidget(label);
+        return label;
+    }
+
+    private <E extends Enum<E>> ScrollInput choice(int row, E[] values, String key, int state, Label label,
+            IntConsumer onPick) {
+
+        final List<Component> options = Arrays.stream(values)
+                .map(v -> (Component) Component.translatable(key + "." + v.name().toLowerCase(Locale.ROOT))).toList();
+        return new SelectionScrollInput(guiLeft + fieldX, rowTop(row), fieldW, FIELD_H).forOptions(options)
+                .titled(Component.translatable(key))
+                .writingTo(label)
+                .calling(onPick::accept)
+                .setState(state);
+    }
+
+    private int rowTop(int row) {
+
+        return guiTop + ROW_Y + row * ROW_STEP;
+    }
+
     @Override
-    public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+    protected void renderWindow(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
 
-        renderTransparentBackground(graphics);
-        final int left = (width - WIDTH) / 2;
-        final int top = (height - HEIGHT) / 2;
-        final int[] colours = ramp();
-        graphics.fill(left, top, left + WIDTH, top + HEIGHT, Palette.argb(Palette.METAL[0], 0.94));
-        graphics.renderOutline(left, top, WIDTH, HEIGHT, 0xFF000000 | Palette.METAL[3]);
-        graphics.fill(left, top, left + WIDTH, top + 3, 0xFF000000 | colours[Palette.MAIN]);
-        graphics.fill(left + 3, top + 3, left + WIDTH - 3, top + 4, Palette.argb(colours[Palette.LIGHT], 0.35));
-        graphics.drawString(font, title, left + PAD, top + 12, 0xFF000000 | Palette.PALE);
-        caption(graphics, left + PAD, top + 28, "polarity");
-        caption(graphics, left + PAD, top + 66, "mode");
-        caption(graphics, left + PAD, top + 104, "shape");
-        caption(graphics, left + PAD, top + 144, "level");
-        final String value = String.format(Locale.ROOT, "%.2f", level);
-        graphics.drawString(font, value, left + WIDTH - PAD - font.width(value), top + 144, 0xFF000000 | colours[Palette.LIGHT]);
+        graphics.blit(BACKGROUND, guiLeft, guiTop, 0, 0, WIDTH, HEIGHT);
+        graphics.drawString(font, title, guiLeft + (WIDTH - font.width(title)) / 2, guiTop + 4, TITLE, false);
+        for (int row = 0; row < CAPTIONS.length; row++) {
+            graphics.drawString(font, caption(CAPTIONS[row]), guiLeft + MARGIN, rowTop(row) + 5, CAPTION, true);
+            InputField.draw(graphics, guiLeft + fieldX, rowTop(row), fieldW, FIELD_H);
+        }
+        cells(graphics);
+        GuiGameElement.of(new ItemStack(ModItems.HILL_CORE.get())).<GuiGameElement.GuiRenderBuilder>at(guiLeft + WIDTH + 6,
+                guiTop + HEIGHT - 60, -200).scale(4).render(graphics);
     }
 
-    private void caption(GuiGraphics graphics, int x, int y, String key) {
+    private static Component caption(String key) {
 
-        graphics.drawString(font, Component.translatable("hillsphere.core." + key).getString().toUpperCase(Locale.ROOT), x, y,
-                0xFF000000 | Palette.METAL[4], false);
+        return Component.translatable("hillsphere.core." + key);
+    }
+
+    /** Six cells at the right of the level field, lit up to the level in the polarity's colour (fractions too). */
+    private void cells(GuiGraphics graphics) {
+
+        final int[] ramp = Palette.of(polarity);
+        final int y = rowTop(3) + 6;
+        for (int i = 0; i < HillCoreBlock.MAX_LEVEL; i++) {
+            final int x = guiLeft + fieldX + fieldW - 64 + i * 10;
+            graphics.fill(x, y, x + 8, y + 6, 0xFF373737);
+            final int lit = (int) Math.round(8 * Math.max(0, Math.min(1, level - i)));
+            graphics.fill(x, y, x + lit, y + 6, 0xFF000000 | ramp[Palette.MAIN]);
+            graphics.fill(x, y, x + lit, y + 1, 0xFF000000 | ramp[Palette.LIGHT]);
+        }
     }
 
     @Override
     public void removed() {
 
-        if (unsent) {
-            send();
-        }
-    }
-
-    private void send() {
-
-        unsent = false;
         PacketDistributor.sendToServer(new CoreSettingsPayload(pos, polarity, level, mode, shape));
+        super.removed();
     }
 }

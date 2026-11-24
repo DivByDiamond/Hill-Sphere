@@ -23,6 +23,7 @@ import dev.loki.hillsphere.entity.FrameState;
 import dev.loki.hillsphere.entity.FrameSwitch;
 import dev.loki.hillsphere.entity.LivingGravity;
 import dev.loki.hillsphere.field.frame.GravityFrame;
+import dev.loki.hillsphere.network.frame.FrameNetwork;
 import dev.loki.hillsphere.field.math.Vec3d;
 import dev.loki.hillsphere.field.resolve.Gravity;
 import dev.loki.hillsphere.field.resolve.PullSmoother;
@@ -56,6 +57,7 @@ public abstract class EntityFrameMixin implements FrameState {
     @Unique private double hillsphereStrength = 1;
     @Unique private final FrameSwitch hillsphereSwitch = new FrameSwitch();
     @Unique private final PullSmoother hillspherePull = new PullSmoother();
+    @Unique private Gravity hillspherePlanet = Gravity.VANILLA;
     @Unique private boolean hillsphereInside;
     @Unique private Vec3 hillsphereFrom = Vec3.ZERO;
     @Unique private Vec3 hillsphereAsked = Vec3.ZERO;
@@ -64,22 +66,26 @@ public abstract class EntityFrameMixin implements FrameState {
     protected abstract AABB makeBoundingBox();
 
     @Override
-    public GravityFrame hillsphereFrame() {
+    public GravityFrame hillsphereFrame() { return hillsphereFrame; }
 
-        return hillsphereFrame;
+    @Override
+    public double hillsphereStrength() { return hillsphereStrength; }
+
+    @Override
+    public Gravity hillspherePull() { return hillspherePlanet; }
+
+    @Override
+    public void hillsphereApply(GravityFrame frame) {
+        if (frame == hillsphereFrame) {
+            return;
+        }
+        hillsphereFrame = frame;
+        hillsphereSwitch.forget();
+        ((Entity) (Object) this).setBoundingBox(makeBoundingBox());
     }
 
     @Override
-    public double hillsphereStrength() {
-
-        return hillsphereStrength;
-    }
-
-    @Override
-    public void hillsphereInside(boolean inside) {
-
-        hillsphereInside = inside;
-    }
+    public void hillsphereInside(boolean inside) { hillsphereInside = inside; }
 
     /** A rider stays in the frame it sat down in: the seat holds it, and turning its body would pull it off the seat. */
     @Override
@@ -87,8 +93,9 @@ public abstract class EntityFrameMixin implements FrameState {
 
         final Entity self = (Entity) (Object) this;
         final Gravity planet = hillspherePull.next(FieldLookup.planetAt(self));
+        hillspherePlanet = planet;
         hillsphereStrength = Gravity.VANILLA.equals(planet) ? 1 : planet.strength();
-        if (self.isPassenger()) {
+        if (self.isPassenger() || !FrameNetwork.decides(self)) {
             return;
         }
         final GravityFrame next = hillsphereSwitch.next(self, hillsphereFrame, planet);
@@ -104,6 +111,7 @@ public abstract class EntityFrameMixin implements FrameState {
                 // moved to the new feet: half a body into the new floor. Collisions skip blocks a box already overlaps,
                 // and Sable carries the body by that box's anchor, so it sank through the floor.
                 self.setBoundingBox(makeBoundingBox());
+                FrameNetwork.turned(self, next);
             }
         }
     }

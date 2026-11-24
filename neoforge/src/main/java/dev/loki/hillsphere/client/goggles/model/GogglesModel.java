@@ -30,8 +30,10 @@ import net.minecraft.world.entity.LivingEntity;
 
 /**
  * The goggles on the head, in pixels of the head model: a strap hugging the head (vanilla head layout of the
- * 64x32 armor texture), a brass plate over the eyes and two lenses standing out of it. The plate and lens
- * cubes take their texture from the unused hat area at x 32-51. Only the head carries cubes.
+ * 64x32 armor texture) and two hollow rectangular brass frames 2 pixels deep in front of the eyes. Each frame is
+ * 4x3 outside with a 2x1 hole right over a skin's eye, so the eyes show through; the bars are shared (one top, one
+ * bottom, one bridge) so no two faces lie on each other. Short temples join the frames to the strap. The bar
+ * regions sit in the unused hat area at x 32-62 (see docs/tools/goggles_textures.py). Only the head carries cubes.
  */
 public final class GogglesModel {
 
@@ -39,6 +41,8 @@ public final class GogglesModel {
     private static final int TEXTURE_HEIGHT = 32;
     /** Just above the skin's hat layer (0.5), so the strap is not hidden in it. */
     private static final CubeDeformation STRAP = new CubeDeformation(0.55f);
+    /** Front of the frames: 2 pixels deep, their back just clear of the strap (head face -4, strap 0.55 out). */
+    private static final float FRONT = -6.6f;
     private static final String[] EMPTY_PARTS = {"hat", "body", "right_arm", "left_arm", "right_leg", "left_leg"};
 
     private static HumanoidModel<LivingEntity> model;
@@ -67,9 +71,13 @@ public final class GogglesModel {
         final PartDefinition root = mesh.getRoot();
         root.addOrReplaceChild("head", CubeListBuilder.create()
                 .texOffs(0, 0).addBox(-4f, -8f, -4f, 8, 8, 8, STRAP)
-                .texOffs(32, 0).addBox(-4.5f, -5.5f, -5f, 9, 4, 1)
-                .texOffs(32, 6).addBox(-3.5f, -5f, -5.6f, 3, 3, 1)
-                .texOffs(32, 6).addBox(0.5f, -5f, -5.6f, 3, 3, 1), PartPose.ZERO);
+                .texOffs(32, 0).addBox(-4f, -5f, FRONT, 8, 1, 2)
+                .texOffs(32, 4).addBox(-4f, -3f, FRONT, 8, 1, 2)
+                .texOffs(32, 8).addBox(-4f, -4f, FRONT, 1, 1, 2)
+                .texOffs(40, 8).addBox(3f, -4f, FRONT, 1, 1, 2)
+                .texOffs(48, 8).addBox(-1f, -4f, FRONT, 2, 1, 2)
+                .texOffs(56, 8).addBox(-5f, -4f, FRONT + 0.2f, 1, 1, 2)
+                .texOffs(56, 8).addBox(4f, -4f, FRONT + 0.2f, 1, 1, 2), PartPose.ZERO);
         for (final String name : EMPTY_PARTS) {
             root.addOrReplaceChild(name, CubeListBuilder.create(), PartPose.ZERO);
         }

@@ -45,5 +45,8 @@
   "hillsphere.goggles.panel.radius": "Radius",
   "hillsphere.goggles.panel.load": "Load SU",
   "hillsphere.goggles.panel.level": "Level",
-  "hillsphere.goggles.panel.redstone": "Redstone"
+  "hillsphere.goggles.panel.redstone": "Redstone",
+  "hillsphere.goggles.blocks": "%s blocks",
+  "hillsphere.goggles.needs_rpm": "needs %s RPM",
+  "hillsphere.goggles.panel.polarity": "Polarity"
 }

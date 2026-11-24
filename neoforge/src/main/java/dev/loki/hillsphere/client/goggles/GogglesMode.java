@@ -44,7 +44,7 @@ public enum GogglesMode {
         SURFACES,
         /** Field edges, plateaus and the line between two fields. */
         BOUNDS,
-        /** Numbers of the core under the crosshair. */
+        /** Create's goggle tooltip (core numbers, stress of any Create block) while wearing these goggles. */
         PANEL,
         /** The "down" arrow in the corner. */
         COMPASS,

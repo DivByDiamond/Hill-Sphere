@@ -32,7 +32,8 @@ import org.joml.Matrix4f;
 
 /**
  * Everything the goggles put on the screen: a tint at the screen edges in the colour of the field around the
- * wearer, the "down" compass, the panel of the core in sight and the name of the current mode in the corner.
+ * wearer, the "down" compass and the name of the current mode in the corner. The numbers of the core in sight are
+ * Create's goggle tooltip (see CoreTooltip).
  */
 public final class HudOverlay {
 
@@ -57,9 +58,6 @@ public final class HudOverlay {
         }
         if (state.shows(Layer.COMPASS)) {
             DownCompass.render(graphics, state);
-        }
-        if (state.shows(Layer.PANEL)) {
-            CorePanel.render(graphics);
         }
         label(graphics, mc, state.modeBanner(partialTick));
     }

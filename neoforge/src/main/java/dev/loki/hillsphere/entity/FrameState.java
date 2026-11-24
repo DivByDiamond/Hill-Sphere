@@ -19,6 +19,7 @@
 package dev.loki.hillsphere.entity;
 
 import dev.loki.hillsphere.field.frame.GravityFrame;
+import dev.loki.hillsphere.field.resolve.Gravity;
 
 /** What every entity remembers about the field it is in; added to Entity by a mixin. */
 public interface FrameState {
@@ -31,6 +32,12 @@ public interface FrameState {
 
     /** Looks the field up again; called once per tick, so everything in the tick agrees. */
     void hillsphereRefresh();
+
+    /** The eased pull felt this tick: what the server checks a player's claimed frame against. */
+    Gravity hillspherePull();
+
+    /** Puts the entity in a frame the other side decided (see FrameNetwork), or one loaded from its save. */
+    void hillsphereApply(GravityFrame frame);
 
     /** Starts or ends a stretch of vanilla code that thinks in the virtual frame. */
     void hillsphereInside(boolean inside);

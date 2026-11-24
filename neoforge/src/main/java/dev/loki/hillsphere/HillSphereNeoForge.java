@@ -27,6 +27,7 @@ import dev.loki.hillsphere.config.GogglesConfig;
 import dev.loki.hillsphere.config.HillSphereConfig;
 import dev.loki.hillsphere.debug.PlayerWatch;
 import dev.loki.hillsphere.network.FieldNetwork;
+import dev.loki.hillsphere.network.frame.FrameNetwork;
 import dev.loki.hillsphere.registry.ModBlockEntities;
 import dev.loki.hillsphere.registry.ModBlocks;
 import dev.loki.hillsphere.registry.ModFluids;
@@ -61,6 +62,7 @@ public class HillSphereNeoForge {
         ModFluids.register(modBus);
         NeoForge.EVENT_BUS.addListener(LevelEvent.Unload.class, e -> WorldFields.forget(e.getLevel()));
         FieldNetwork.register(modBus);
+        FrameNetwork.register(modBus);
         PlayerWatch.register(NeoForge.EVENT_BUS);
         FallRule.register(NeoForge.EVENT_BUS);
         Ships.init();

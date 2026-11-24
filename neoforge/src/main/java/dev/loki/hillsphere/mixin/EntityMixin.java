@@ -18,11 +18,14 @@
  */
 package dev.loki.hillsphere.mixin;
 
+import dev.loki.hillsphere.entity.FrameState;
 import dev.loki.hillsphere.entity.LivingGravity;
+import dev.loki.hillsphere.field.frame.GravityFrame;
 import dev.loki.hillsphere.field.math.Vec3d;
 import dev.loki.hillsphere.field.resolve.Gravity;
 import dev.loki.hillsphere.world.FieldLookup;
 
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import org.spongepowered.asm.mixin.Mixin;
@@ -34,6 +37,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 /** Levitation cores weaken the gravity every entity feels: players, mobs, items, falling blocks, arrows. */
 @Mixin(Entity.class)
 public abstract class EntityMixin {
+
+    private static final String FRAME_KEY = "HillsphereFrame";
 
     @Inject(method = "getGravity", at = @At("RETURN"), cancellable = true)
     private void hillsphereWeakenGravity(CallbackInfoReturnable<Double> cir) {
@@ -70,5 +75,27 @@ public abstract class EntityMixin {
             self.setDeltaMovement(self.getDeltaMovement().add(down.x() * pull, down.y() * pull, down.z() * pull));
         }
         ci.cancel();
+    }
+
+    /** A body standing on a wall or ceiling is still there after a save and load, instead of falling off it. */
+    @Inject(method = "saveWithoutId", at = @At("RETURN"))
+    private void hillsphereSaveFrame(CompoundTag tag, CallbackInfoReturnable<CompoundTag> cir) {
+        final Entity self = (Entity) (Object) this;
+        final GravityFrame frame = LivingGravity.frameOf(self);
+        if (!frame.isVanilla()) {
+            tag.putString(FRAME_KEY, frame.name());
+        }
+    }
+
+    @Inject(method = "load", at = @At("RETURN"))
+    private void hillsphereLoadFrame(CompoundTag tag, CallbackInfo ci) {
+        final Entity self = (Entity) (Object) this;
+        if (self instanceof LivingEntity && tag.contains(FRAME_KEY)) {
+            for (final GravityFrame frame : GravityFrame.values()) {
+                if (frame.name().equals(tag.getString(FRAME_KEY))) {
+                    ((FrameState) self).hillsphereApply(frame);
+                }
+            }
+        }
     }
 }

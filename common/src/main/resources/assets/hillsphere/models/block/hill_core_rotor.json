@@ -1,11 +1,14 @@
 {
   "textures": {
-    "particle": "hillsphere:block/hill_core_shaft",
-    "shaft": "hillsphere:block/hill_core_shaft"
+    "particle": "create:block/axis",
+    "axis": "create:block/axis",
+    "axis_top": "create:block/axis_top",
+    "hub": "hillsphere:block/hill_core_hub",
+    "weight": "hillsphere:block/hill_core_weight"
   },
   "elements": [
     {
-      "name": "shaft",
+      "name": "shaft_low",
       "from": [
         6,
         0,
@@ -13,57 +16,48 @@
       ],
       "to": [
         10,
-        16,
+        6.5,
         10
       ],
       "faces": {
         "north": {
-          "texture": "#shaft",
+          "texture": "#axis",
           "uv": [
             6,
-            0,
+            9.5,
             10,
             16
           ]
         },
         "south": {
-          "texture": "#shaft",
+          "texture": "#axis",
           "uv": [
             6,
-            0,
+            9.5,
             10,
             16
           ]
         },
         "east": {
-          "texture": "#shaft",
+          "texture": "#axis",
           "uv": [
             6,
-            0,
+            9.5,
             10,
             16
           ]
         },
         "west": {
-          "texture": "#shaft",
+          "texture": "#axis",
           "uv": [
             6,
-            0,
+            9.5,
             10,
             16
           ]
         },
-        "up": {
-          "texture": "#shaft",
-          "uv": [
-            6,
-            6,
-            10,
-            10
-          ]
-        },
         "down": {
-          "texture": "#shaft",
+          "texture": "#axis_top",
           "uv": [
             6,
             6,
@@ -74,56 +68,116 @@
       }
     },
     {
-      "name": "collar",
+      "name": "shaft_high",
+      "from": [
+        6,
+        9.5,
+        6
+      ],
+      "to": [
+        10,
+        16,
+        10
+      ],
+      "faces": {
+        "north": {
+          "texture": "#axis",
+          "uv": [
+            6,
+            0,
+            10,
+            6.5
+          ]
+        },
+        "south": {
+          "texture": "#axis",
+          "uv": [
+            6,
+            0,
+            10,
+            6.5
+          ]
+        },
+        "east": {
+          "texture": "#axis",
+          "uv": [
+            6,
+            0,
+            10,
+            6.5
+          ]
+        },
+        "west": {
+          "texture": "#axis",
+          "uv": [
+            6,
+            0,
+            10,
+            6.5
+          ]
+        },
+        "up": {
+          "texture": "#axis_top",
+          "uv": [
+            6,
+            6,
+            10,
+            10
+          ]
+        }
+      }
+    },
+    {
+      "name": "hub",
       "from": [
         5,
-        6,
+        6.5,
         5
       ],
       "to": [
         11,
-        10,
+        9.5,
         11
       ],
       "faces": {
         "north": {
-          "texture": "#shaft",
+          "texture": "#hub",
           "uv": [
             5,
-            6,
+            6.5,
             11,
-            10
+            9.5
           ]
         },
         "south": {
-          "texture": "#shaft",
+          "texture": "#hub",
           "uv": [
             5,
-            6,
+            6.5,
             11,
-            10
+            9.5
           ]
         },
         "east": {
-          "texture": "#shaft",
+          "texture": "#hub",
           "uv": [
             5,
-            6,
+            6.5,
             11,
-            10
+            9.5
           ]
         },
         "west": {
-          "texture": "#shaft",
+          "texture": "#hub",
           "uv": [
             5,
-            6,
+            6.5,
             11,
-            10
+            9.5
           ]
         },
         "up": {
-          "texture": "#shaft",
+          "texture": "#hub",
           "uv": [
             5,
             5,
@@ -132,12 +186,492 @@
           ]
         },
         "down": {
-          "texture": "#shaft",
+          "texture": "#hub",
           "uv": [
             5,
             5,
             11,
             11
+          ]
+        }
+      }
+    },
+    {
+      "name": "spoke_0",
+      "from": [
+        4.5,
+        7.5,
+        7.5
+      ],
+      "to": [
+        5,
+        8.5,
+        8.5
+      ],
+      "faces": {
+        "up": {
+          "texture": "#hub",
+          "uv": [
+            4.5,
+            7.5,
+            5,
+            8.5
+          ]
+        },
+        "down": {
+          "texture": "#hub",
+          "uv": [
+            4.5,
+            7.5,
+            5,
+            8.5
+          ]
+        },
+        "north": {
+          "texture": "#hub",
+          "uv": [
+            11,
+            7.5,
+            11.5,
+            8.5
+          ]
+        },
+        "south": {
+          "texture": "#hub",
+          "uv": [
+            4.5,
+            7.5,
+            5,
+            8.5
+          ]
+        }
+      }
+    },
+    {
+      "name": "spoke_1",
+      "from": [
+        11,
+        7.5,
+        7.5
+      ],
+      "to": [
+        11.5,
+        8.5,
+        8.5
+      ],
+      "faces": {
+        "up": {
+          "texture": "#hub",
+          "uv": [
+            11,
+            7.5,
+            11.5,
+            8.5
+          ]
+        },
+        "down": {
+          "texture": "#hub",
+          "uv": [
+            11,
+            7.5,
+            11.5,
+            8.5
+          ]
+        },
+        "north": {
+          "texture": "#hub",
+          "uv": [
+            4.5,
+            7.5,
+            5,
+            8.5
+          ]
+        },
+        "south": {
+          "texture": "#hub",
+          "uv": [
+            11,
+            7.5,
+            11.5,
+            8.5
+          ]
+        }
+      }
+    },
+    {
+      "name": "spoke_2",
+      "from": [
+        7.5,
+        7.5,
+        4.5
+      ],
+      "to": [
+        8.5,
+        8.5,
+        5
+      ],
+      "faces": {
+        "up": {
+          "texture": "#hub",
+          "uv": [
+            7.5,
+            4.5,
+            8.5,
+            5
+          ]
+        },
+        "down": {
+          "texture": "#hub",
+          "uv": [
+            7.5,
+            11,
+            8.5,
+            11.5
+          ]
+        },
+        "east": {
+          "texture": "#hub",
+          "uv": [
+            11,
+            7.5,
+            11.5,
+            8.5
+          ]
+        },
+        "west": {
+          "texture": "#hub",
+          "uv": [
+            4.5,
+            7.5,
+            5,
+            8.5
+          ]
+        }
+      }
+    },
+    {
+      "name": "spoke_3",
+      "from": [
+        7.5,
+        7.5,
+        11
+      ],
+      "to": [
+        8.5,
+        8.5,
+        11.5
+      ],
+      "faces": {
+        "up": {
+          "texture": "#hub",
+          "uv": [
+            7.5,
+            11,
+            8.5,
+            11.5
+          ]
+        },
+        "down": {
+          "texture": "#hub",
+          "uv": [
+            7.5,
+            4.5,
+            8.5,
+            5
+          ]
+        },
+        "east": {
+          "texture": "#hub",
+          "uv": [
+            4.5,
+            7.5,
+            5,
+            8.5
+          ]
+        },
+        "west": {
+          "texture": "#hub",
+          "uv": [
+            11,
+            7.5,
+            11.5,
+            8.5
+          ]
+        }
+      }
+    },
+    {
+      "name": "rim_0",
+      "from": [
+        3.5,
+        7,
+        3.5
+      ],
+      "to": [
+        12.5,
+        9,
+        4.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#weight",
+          "uv": [
+            3.5,
+            7,
+            12.5,
+            9
+          ]
+        },
+        "south": {
+          "texture": "#weight",
+          "uv": [
+            3.5,
+            7,
+            12.5,
+            9
+          ]
+        },
+        "east": {
+          "texture": "#weight",
+          "uv": [
+            11.5,
+            7,
+            12.5,
+            9
+          ]
+        },
+        "west": {
+          "texture": "#weight",
+          "uv": [
+            3.5,
+            7,
+            4.5,
+            9
+          ]
+        },
+        "up": {
+          "texture": "#weight",
+          "uv": [
+            3.5,
+            3.5,
+            12.5,
+            4.5
+          ]
+        },
+        "down": {
+          "texture": "#weight",
+          "uv": [
+            3.5,
+            11.5,
+            12.5,
+            12.5
+          ]
+        }
+      }
+    },
+    {
+      "name": "rim_1",
+      "from": [
+        3.5,
+        7,
+        11.5
+      ],
+      "to": [
+        12.5,
+        9,
+        12.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#weight",
+          "uv": [
+            3.5,
+            7,
+            12.5,
+            9
+          ]
+        },
+        "south": {
+          "texture": "#weight",
+          "uv": [
+            3.5,
+            7,
+            12.5,
+            9
+          ]
+        },
+        "east": {
+          "texture": "#weight",
+          "uv": [
+            3.5,
+            7,
+            4.5,
+            9
+          ]
+        },
+        "west": {
+          "texture": "#weight",
+          "uv": [
+            11.5,
+            7,
+            12.5,
+            9
+          ]
+        },
+        "up": {
+          "texture": "#weight",
+          "uv": [
+            3.5,
+            11.5,
+            12.5,
+            12.5
+          ]
+        },
+        "down": {
+          "texture": "#weight",
+          "uv": [
+            3.5,
+            3.5,
+            12.5,
+            4.5
+          ]
+        }
+      }
+    },
+    {
+      "name": "rim_2",
+      "from": [
+        3.5,
+        7,
+        4.5
+      ],
+      "to": [
+        4.5,
+        9,
+        11.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#weight",
+          "uv": [
+            11.5,
+            7,
+            12.5,
+            9
+          ]
+        },
+        "south": {
+          "texture": "#weight",
+          "uv": [
+            3.5,
+            7,
+            4.5,
+            9
+          ]
+        },
+        "east": {
+          "texture": "#weight",
+          "uv": [
+            4.5,
+            7,
+            11.5,
+            9
+          ]
+        },
+        "west": {
+          "texture": "#weight",
+          "uv": [
+            4.5,
+            7,
+            11.5,
+            9
+          ]
+        },
+        "up": {
+          "texture": "#weight",
+          "uv": [
+            3.5,
+            4.5,
+            4.5,
+            11.5
+          ]
+        },
+        "down": {
+          "texture": "#weight",
+          "uv": [
+            3.5,
+            4.5,
+            4.5,
+            11.5
+          ]
+        }
+      }
+    },
+    {
+      "name": "rim_3",
+      "from": [
+        11.5,
+        7,
+        4.5
+      ],
+      "to": [
+        12.5,
+        9,
+        11.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#weight",
+          "uv": [
+            3.5,
+            7,
+            4.5,
+            9
+          ]
+        },
+        "south": {
+          "texture": "#weight",
+          "uv": [
+            11.5,
+            7,
+            12.5,
+            9
+          ]
+        },
+        "east": {
+          "texture": "#weight",
+          "uv": [
+            4.5,
+            7,
+            11.5,
+            9
+          ]
+        },
+        "west": {
+          "texture": "#weight",
+          "uv": [
+            4.5,
+            7,
+            11.5,
+            9
+          ]
+        },
+        "up": {
+          "texture": "#weight",
+          "uv": [
+            11.5,
+            4.5,
+            12.5,
+            11.5
+          ]
+        },
+        "down": {
+          "texture": "#weight",
+          "uv": [
+            11.5,
+            4.5,
+            12.5,
+            11.5
           ]
         }
       }

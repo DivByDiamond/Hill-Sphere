@@ -19,6 +19,7 @@
 package dev.loki.hillsphere.client.goggles;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import com.simibubi.create.content.equipment.goggles.GogglesItem;
 import dev.loki.hillsphere.client.goggles.GogglesMode.Layer;
 import dev.loki.hillsphere.client.goggles.flow.FlowLayer;
 import dev.loki.hillsphere.client.goggles.hud.HudOverlay;
@@ -56,6 +57,9 @@ public final class GogglesClient {
     }
 
     public static void init(IEventBus modBus) {
+
+        // Our goggles show Create's goggle tooltip too (core numbers, stress), unless the mode hides the panel layer.
+        GogglesItem.addIsWearingPredicate(player -> GogglesState.isWorn(player) && STATE.shows(Layer.PANEL));
 
         modBus.addListener(RegisterKeyMappingsEvent.class, e -> e.register(CYCLE));
         modBus.addListener(RegisterClientExtensionsEvent.class, e -> e.registerItem(new GogglesExtensions(), ModItems.HILL_GOGGLES.get()));

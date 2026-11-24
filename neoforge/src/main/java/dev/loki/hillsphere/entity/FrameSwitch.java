@@ -49,6 +49,11 @@ public final class FrameSwitch {
         return chooser.next(current, planet.direction(), frame -> SupportProbe.floorBelow(self, frame, FrameChooser.REACH));
     }
 
+    /** Drops a turn in progress: the frame was set from outside. */
+    public void forget() {
+        chooser.reset();
+    }
+
     /** Turns the body around its middle, and only if the turned body has room; false means wait and try again. */
     public boolean turn(Entity self, GravityFrame from, GravityFrame to) {
 

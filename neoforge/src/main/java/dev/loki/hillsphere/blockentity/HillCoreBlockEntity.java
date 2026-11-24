@@ -24,6 +24,7 @@ import dev.loki.hillsphere.block.FieldState;
 import dev.loki.hillsphere.block.HillCoreBlock;
 import dev.loki.hillsphere.blockentity.setting.CoreSettingSlot;
 import dev.loki.hillsphere.blockentity.setting.CoreSettings;
+import dev.loki.hillsphere.client.goggles.hud.CoreTooltip;
 import dev.loki.hillsphere.compat.Ships;
 import dev.loki.hillsphere.config.HillSphereConfig;
 import dev.loki.hillsphere.field.CoreDriver;
@@ -92,6 +93,15 @@ public class HillCoreBlockEntity extends KineticBlockEntity {
                 Math.abs(getSpeed()), !isOverStressed());
         WorldFields.of(level).update(p, settings.shape() == Shape.DECK ? field.withDeck(deck(center, field.radius())) : field);
         showState();
+    }
+
+    /** Create's goggle tooltip: its stress lines, then the core's own (client side only). */
+    @Override
+    public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
+
+        super.addToGoggleTooltip(tooltip, isPlayerSneaking);
+        CoreTooltip.addTo(tooltip, this);
+        return true;
     }
 
     /** Destroyed, moved onto a ship or unloaded with its chunk (or its ship): either way its field is gone. */

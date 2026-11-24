@@ -45,5 +45,8 @@
   "hillsphere.goggles.panel.radius": "Радиус",
   "hillsphere.goggles.panel.load": "Нагр. SU",
   "hillsphere.goggles.panel.level": "Уровень",
-  "hillsphere.goggles.panel.redstone": "Редстоун"
+  "hillsphere.goggles.panel.redstone": "Редстоун",
+  "hillsphere.goggles.blocks": "%s бл.",
+  "hillsphere.goggles.needs_rpm": "нужно %s об/мин",
+  "hillsphere.goggles.panel.polarity": "Полярность"
 }

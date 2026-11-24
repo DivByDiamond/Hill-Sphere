@@ -26,6 +26,7 @@ import net.minecraft.resources.ResourceLocation;
 /** Models that are drawn by Create's renderer instead of as part of the block, so they can spin. */
 public final class ModPartials {
 
+    /** Create's shaft with a governor in the middle (hub, spokes, weights); it all spins with the shaft. */
     public static final PartialModel ROTOR =
             PartialModel.of(ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "block/hill_core_rotor"));
 
