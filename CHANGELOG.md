@@ -1,8 +1,9 @@
 # Changelog
 
-## 0.1.0-beta.3
+## 0.1.0
 
-Third test build: a new look that fits Create, and "down" kept in step between server and clients.
+First release: a new look that fits Create, and "down" kept in step between server and clients. The same build
+as 0.1.0-beta.3, published as a release.
 
 - New textures in Create's style: the Hill Core is a brass-framed casing with a glowing window, gravite is a
   dull bronze, the ore sits on vanilla deepslate, new item sprites, the molten gravite bucket is the vanilla
