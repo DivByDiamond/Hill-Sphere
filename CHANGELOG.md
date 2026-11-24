@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.1.0-beta.3
+
+Third test build: a new look that fits Create, and "down" kept in step between server and clients.
+
+- New textures in Create's style: the Hill Core is a brass-framed casing with a glowing window, gravite is a
+  dull bronze, the ore sits on vanilla deepslate, new item sprites, the molten gravite bucket is the vanilla
+  bucket
+- A flywheel spins on the core's shaft behind the window: Create's own shaft with a brass hub and a bronze rim
+- Hill Goggles redone: hollow rectangular brass frames over the eyes, their inner edges glow in the field's colour
+- "Down" is synced: the server turns mobs and tells everyone, your client turns you at once and the server
+  checks it, so others see you the right way up; the turn is saved, so logging out on a ceiling keeps you there
+- The core settings screen is built like Create's own screens (scroll over a field to change it, tick to close)
+- The core's numbers are now in Create's goggle tooltip, next to its stress; Hill Goggles show Create's goggle
+  tooltip on every Create block too
+
 ## 0.1.0-beta.2
 
 Second test build: gravity on ships and walls reworked, plus new goggle options. Still rough; please report
